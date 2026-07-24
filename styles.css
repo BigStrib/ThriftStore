@@ -814,3 +814,29 @@ input[type="number"] { -moz-appearance: textfield; }
     .view { display: block !important; position: static; overflow: visible; }
     html, body { position: static; overflow: visible; background: #fff; color: #000; }
 }
+
+
+
+/* ============================================
+   PWA GAP FIX — tab bar extends to physical bottom
+   ============================================ */
+@media (max-width: 767px) {
+    .tabs {
+        /* Grow the bar itself to include safe area */
+        height: calc(54px + env(safe-area-inset-bottom, 34px));
+        padding-bottom: env(safe-area-inset-bottom, 34px);
+    }
+
+    /* Paint the safe area zone in case padding doesn't render */
+    .tabs::after {
+        content: '';
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: env(safe-area-inset-bottom, 34px);
+        background: var(--b0);
+        z-index: 899;
+        pointer-events: none;
+    }
+}
