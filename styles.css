@@ -51,8 +51,7 @@
     /* Layout */
     --nav-h: 54px;
     --mob-nav-h: 46px;
-    --tab-h: 0px;
-    --tab-total: 0px;
+    --sat: env(safe-area-inset-top, 0px);
     --sidebar-w: 220px;
 }
 
@@ -144,7 +143,7 @@ input[type="number"] {
 }
 
 /* ============================================
-   MOBILE TOP TABS (replaces bottom bar)
+   MOBILE TOP TABS — sits at very top with safe area
    ============================================ */
 .tabs {
     position: relative;
@@ -152,9 +151,11 @@ input[type="number"] {
     display: flex;
     background: var(--b0);
     border-bottom: 1px solid var(--gb);
-    height: var(--mob-nav-h);
+    /* Safe area on top pushes content below notch/status bar */
+    padding-top: var(--sat);
+    height: calc(var(--mob-nav-h) + var(--sat));
     flex-shrink: 0;
-    order: -1;
+    order: -1; /* Forces tabs above content in flex column */
 }
 
 .tab {
@@ -1836,6 +1837,7 @@ input[type="number"] {
         display: flex;
     }
 
+    /* Hide mobile tabs on tablet+ */
     .tabs {
         display: none;
     }
@@ -1941,7 +1943,7 @@ input[type="number"] {
         display: none;
     }
 
-    /* Top nav becomes a slim divider line — no content */
+    /* Collapse top nav to just a border line when sidebar is visible */
     .top-nav {
         height: 1px;
         padding: 0;
