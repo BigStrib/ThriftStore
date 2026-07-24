@@ -1,36 +1,56 @@
 (function () {
     'use strict';
 
-    // ─── viewport height: the ONLY source of truth ───
+    // ═══════════════════════════════════════════════════
+    // APP HEIGHT — the single source of truth
+    // ═══════════════════════════════════════════════════
+    // In PWA mode on iOS, we want body height to match the FULL screen
+    // (not just visualViewport which excludes the home indicator zone).
+    // Body has padding-bottom: env(safe-area-inset-bottom) which pushes
+    // the tab bar UP into the visible area, leaving the safe-area zone
+    // painted by html's background — no gap possible.
+
     function setAppHeight() {
-        var h = window.visualViewport
-            ? window.visualViewport.height
-            : window.innerHeight;
+        // Use window.innerHeight — this reports the full drawable area
+        // in PWA standalone mode, INCLUDING the home indicator zone.
+        var h = window.innerHeight;
+
+        // Fallback to visualViewport if innerHeight seems wrong (keyboard open)
+        if (window.visualViewport && window.visualViewport.height > h) {
+            h = window.visualViewport.height;
+        }
+
         document.documentElement.style.setProperty('--app-h', h + 'px');
     }
 
+    // Initial + delayed calls to catch PWA initialization
     setAppHeight();
+    setTimeout(setAppHeight, 50);
+    setTimeout(setAppHeight, 200);
+    setTimeout(setAppHeight, 500);
+    setTimeout(setAppHeight, 1000);
+
     window.addEventListener('resize', setAppHeight);
     window.addEventListener('orientationchange', function () {
         setTimeout(setAppHeight, 120);
+        setTimeout(setAppHeight, 400);
     });
-
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', setAppHeight);
-    }
+    window.addEventListener('load', setAppHeight);
+    window.addEventListener('pageshow', setAppHeight);
+    window.addEventListener('focus', setAppHeight);
 
     // PWA resume from background
     document.addEventListener('visibilitychange', function () {
-        if (!document.hidden) setTimeout(setAppHeight, 80);
-    });
-    window.addEventListener('pageshow', setAppHeight);
-    window.addEventListener('load', function () {
-        setAppHeight();
-        setTimeout(setAppHeight, 100);
-        setTimeout(setAppHeight, 500);
+        if (!document.hidden) {
+            setAppHeight();
+            setTimeout(setAppHeight, 100);
+            setTimeout(setAppHeight, 400);
+        }
     });
 
-    // ─── prevent zoom ───
+    // ═══════════════════════════════════════════════════
+    // PREVENT ZOOM
+    // ═══════════════════════════════════════════════════
     document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
     document.addEventListener('gesturechange', function (e) { e.preventDefault(); }, { passive: false });
 
@@ -53,20 +73,26 @@
         }
     });
 
-    // ─── helpers ───
+    // ═══════════════════════════════════════════════════
+    // HELPERS
+    // ═══════════════════════════════════════════════════
     function el(id) { return document.getElementById(id); }
     function fmt(n) { return '$' + n.toFixed(2); }
     function short(n) { return n >= 1000 ? '$' + (n / 1000).toFixed(1) + 'k' : '$' + Math.round(n); }
     function safe(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
     function vib(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
 
-    // ─── data ───
+    // ═══════════════════════════════════════════════════
+    // DATA
+    // ═══════════════════════════════════════════════════
     var data = {
         gw: { items: [], disc: 0, opts: [0, 50, 75] },
         sv: { items: [], disc: 0, opts: [0, 25, 50] }
     };
 
-    // ─── dom ───
+    // ═══════════════════════════════════════════════════
+    // DOM REFERENCES
+    // ═══════════════════════════════════════════════════
     var ui = {};
     ['gw', 'sv'].forEach(function (s) {
         ui[s] = {
@@ -90,7 +116,9 @@
         };
     });
 
-    // ─── toggle panel ───
+    // ═══════════════════════════════════════════════════
+    // TOGGLE PANEL
+    // ═══════════════════════════════════════════════════
     ['gw', 'sv'].forEach(function (s) {
         ui[s].bar.addEventListener('click', function () {
             var p = ui[s].panel;
@@ -104,7 +132,9 @@
         });
     });
 
-    // ─── modal ───
+    // ═══════════════════════════════════════════════════
+    // MODAL
+    // ═══════════════════════════════════════════════════
     var mOverlay = el('modal-overlay');
     var mModal = el('modal');
     var mTitle = el('modal-title');
@@ -136,7 +166,9 @@
         if (e.target === mOverlay) closeModal(false);
     });
 
-    // ─── drawer ───
+    // ═══════════════════════════════════════════════════
+    // DRAWER
+    // ═══════════════════════════════════════════════════
     var dOverlay = el('drawer-overlay');
     var dClose = el('drawer-x');
     var dName = el('ed-name');
@@ -238,7 +270,9 @@
         if (e.key === 'Enter') { e.preventDefault(); dSave.click(); }
     });
 
-    // ─── tabs ───
+    // ═══════════════════════════════════════════════════
+    // TABS
+    // ═══════════════════════════════════════════════════
     var tabBtns = document.querySelectorAll('.tab');
     var views = {
         goodwill: el('view-goodwill'),
@@ -263,7 +297,9 @@
         });
     });
 
-    // ─── chips ───
+    // ═══════════════════════════════════════════════════
+    // CHIPS
+    // ═══════════════════════════════════════════════════
     document.querySelectorAll('.chip').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var s = btn.getAttribute('data-s');
@@ -274,7 +310,9 @@
         });
     });
 
-    // ─── preview ───
+    // ═══════════════════════════════════════════════════
+    // PREVIEW
+    // ═══════════════════════════════════════════════════
     function preview(s) {
         var p = parseFloat(ui[s].price.value) || 0;
         var d = data[s].disc;
@@ -287,7 +325,9 @@
         ui[s].price.addEventListener('input', function () { preview(s); });
     });
 
-    // ─── add ───
+    // ═══════════════════════════════════════════════════
+    // ADD
+    // ═══════════════════════════════════════════════════
     function addItem(s) {
         var n = ui[s].name.value.trim();
         var p = parseFloat(ui[s].price.value);
@@ -322,7 +362,9 @@
         });
     }
 
-    // ─── remove ───
+    // ═══════════════════════════════════════════════════
+    // REMOVE
+    // ═══════════════════════════════════════════════════
     function removeItem(s, id) {
         var item = data[s].items.filter(function (i) { return i.id === id; })[0];
         if (!item) return;
@@ -359,7 +401,9 @@
         });
     }
 
-    // ─── clear ───
+    // ═══════════════════════════════════════════════════
+    // CLEAR
+    // ═══════════════════════════════════════════════════
     function clearAll(s) {
         if (data[s].items.length === 0) return;
 
@@ -377,7 +421,9 @@
         });
     }
 
-    // ─── render ───
+    // ═══════════════════════════════════════════════════
+    // RENDER
+    // ═══════════════════════════════════════════════════
     function render(s) {
         var d = ui[s];
         var items = data[s].items;
@@ -471,7 +517,9 @@
         d.statS.textContent = short(totS);
     }
 
-    // ─── flash validation ───
+    // ═══════════════════════════════════════════════════
+    // FLASH VALIDATION
+    // ═══════════════════════════════════════════════════
     function flash(el) {
         if (!el) return;
         el.classList.add('err', 'shake');
@@ -479,7 +527,9 @@
         setTimeout(function () { el.classList.remove('err', 'shake'); }, 600);
     }
 
-    // ─── bindings ───
+    // ═══════════════════════════════════════════════════
+    // BINDINGS
+    // ═══════════════════════════════════════════════════
     ui.gw.add.addEventListener('click', function () { addItem('gw'); });
     ui.sv.add.addEventListener('click', function () { addItem('sv'); });
     ui.gw.nuke.addEventListener('click', function () { clearAll('gw'); });
@@ -501,7 +551,9 @@
         }
     });
 
-    // ─── init ───
+    // ═══════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════
     render('gw');
     render('sv');
 
