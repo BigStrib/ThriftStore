@@ -50,8 +50,9 @@
 
     /* Layout */
     --nav-h: 54px;
-    --tab-h: 54px;
-    --tab-total: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px));
+    --mob-nav-h: 46px;
+    --tab-h: 0px;
+    --tab-total: 0px;
     --sidebar-w: 220px;
 }
 
@@ -143,7 +144,98 @@ input[type="number"] {
 }
 
 /* ============================================
-   TOP NAV BAR (Tablet / Desktop)
+   MOBILE TOP TABS (replaces bottom bar)
+   ============================================ */
+.tabs {
+    position: relative;
+    z-index: 900;
+    display: flex;
+    background: var(--b0);
+    border-bottom: 1px solid var(--gb);
+    height: var(--mob-nav-h);
+    flex-shrink: 0;
+    order: -1;
+}
+
+.tab {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--t3);
+    transition: color .25s var(--ease);
+    position: relative;
+    height: var(--mob-nav-h);
+}
+
+.tab::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 40px;
+    height: 2px;
+    border-radius: 1px 1px 0 0;
+    transform: translateX(-50%) scaleX(0);
+    transition: transform .3s var(--pop);
+}
+
+.tab.on::after {
+    transform: translateX(-50%) scaleX(1);
+}
+
+.tab[data-tab="goodwill"]::after {
+    background: var(--gw);
+}
+
+.tab[data-tab="svdp"]::after {
+    background: var(--sv);
+}
+
+.tab[data-tab="goodwill"].on {
+    color: var(--gw-hi);
+}
+
+.tab[data-tab="svdp"].on {
+    color: var(--sv-hi);
+}
+
+.tab-ico {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 11px;
+    background: var(--b3);
+    color: var(--t3);
+    transition: all .3s var(--pop);
+}
+
+.tab[data-tab="goodwill"].on .tab-ico {
+    background: var(--gw);
+    color: #fff;
+    box-shadow: 0 2px 10px var(--gw-glow);
+}
+
+.tab[data-tab="svdp"].on .tab-ico {
+    background: var(--sv);
+    color: #fff;
+    box-shadow: 0 2px 10px var(--sv-glow);
+}
+
+.tab-txt {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .2px;
+}
+
+/* ============================================
+   TOP NAV BAR (Tablet / Desktop — hidden on mobile)
    ============================================ */
 .top-nav {
     display: none;
@@ -158,7 +250,6 @@ input[type="number"] {
     z-index: 500;
 }
 
-/* Brand area — hidden */
 .top-nav-brand {
     display: none;
 }
@@ -173,7 +264,7 @@ input[type="number"] {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 7px 16px;
+    padding: 8px 20px;
     border-radius: var(--rx);
     font-size: 14px;
     font-weight: 600;
@@ -220,13 +311,13 @@ input[type="number"] {
 }
 
 .top-nav-tab-ico {
-    width: 22px;
-    height: 22px;
-    border-radius: 5px;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     background: var(--b3);
     color: var(--t3);
@@ -254,7 +345,7 @@ input[type="number"] {
 }
 
 /* ============================================
-   CONTENT AREA (sidebar + views)
+   CONTENT AREA
    ============================================ */
 .content-area {
     flex: 1;
@@ -409,7 +500,6 @@ input[type="number"] {
         opacity: 0;
         transform: translateY(6px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -429,104 +519,12 @@ input[type="number"] {
 }
 
 /* ============================================
-   MOBILE TAB BAR
-   ============================================ */
-.tabs {
-    position: relative;
-    z-index: 900;
-    display: flex;
-    background: var(--b0);
-    border-top: 1px solid var(--gb);
-    height: var(--tab-total);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    flex-shrink: 0;
-}
-
-.tab {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    color: var(--t3);
-    transition: color .25s var(--ease);
-    position: relative;
-    height: var(--tab-h);
-}
-
-.tab::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 30px;
-    height: 2px;
-    border-radius: 0 0 1px 1px;
-    transform: translateX(-50%) scaleX(0);
-    transition: transform .3s var(--pop);
-}
-
-.tab.on::after {
-    transform: translateX(-50%) scaleX(1);
-}
-
-.tab[data-tab="goodwill"]::after {
-    background: var(--gw);
-}
-
-.tab[data-tab="svdp"]::after {
-    background: var(--sv);
-}
-
-.tab[data-tab="goodwill"].on {
-    color: var(--gw-hi);
-}
-
-.tab[data-tab="svdp"].on {
-    color: var(--sv-hi);
-}
-
-.tab-ico {
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 12px;
-    background: var(--b3);
-    color: var(--t3);
-    transition: all .3s var(--pop);
-}
-
-.tab[data-tab="goodwill"].on .tab-ico {
-    background: var(--gw);
-    color: #fff;
-    box-shadow: 0 2px 10px var(--gw-glow);
-}
-
-.tab[data-tab="svdp"].on .tab-ico {
-    background: var(--sv);
-    color: #fff;
-    box-shadow: 0 2px 10px var(--sv-glow);
-}
-
-.tab-txt {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: .3px;
-}
-
-/* ============================================
    HEADER
    ============================================ */
 .hdr {
     flex-shrink: 0;
     margin: 0 -16px;
     padding: 12px 18px 10px;
-    padding-top: max(env(safe-area-inset-top, 12px), 12px);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1136,7 +1134,6 @@ input[type="number"] {
         opacity: 0;
         transform: translateY(-4px) scale(.97);
     }
-
     to {
         opacity: 1;
         transform: none;
@@ -1290,7 +1287,7 @@ input[type="number"] {
     z-index: 1;
 }
 
-.foot>* {
+.foot > * {
     padding-left: 22px;
     padding-right: 22px;
 }
@@ -1492,7 +1489,7 @@ input[type="number"] {
     transform: translateY(100%);
     transition: transform .35s var(--out);
     scrollbar-width: none;
-    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    padding-bottom: 16px;
 }
 
 .drawer::-webkit-scrollbar {
@@ -1702,23 +1699,18 @@ input[type="number"] {
     0%, 100% {
         transform: translateX(0);
     }
-
     15% {
         transform: translateX(-5px);
     }
-
     30% {
         transform: translateX(5px);
     }
-
     45% {
         transform: translateX(-3px);
     }
-
     60% {
         transform: translateX(3px);
     }
-
     75% {
         transform: translateX(-1px);
     }
@@ -1739,7 +1731,7 @@ input[type="number"] {
    ============================================ */
 .pwa-banner {
     position: fixed;
-    bottom: calc(var(--tab-total) + 12px);
+    bottom: 16px;
     left: 50%;
     transform: translateX(-50%) translateY(20px);
     z-index: 800;
@@ -1840,7 +1832,6 @@ input[type="number"] {
    TABLET — 768px+
    ============================================ */
 @media (min-width: 768px) {
-    /* Show top nav, hide mobile tab bar */
     .top-nav {
         display: flex;
     }
@@ -1862,11 +1853,9 @@ input[type="number"] {
         padding: 0 24px;
     }
 
-    /* Header — no safe area needed, top nav handles it */
     .hdr {
         margin: 0 -24px;
         padding: 18px 28px 14px;
-        padding-top: 18px;
     }
 
     .hdr-text h1 {
@@ -1897,7 +1886,6 @@ input[type="number"] {
         padding: 10px 18px;
     }
 
-    /* Actions visible on hover */
     .act {
         opacity: 0;
         transition: opacity .2s, background .2s, color .2s;
@@ -1911,7 +1899,7 @@ input[type="number"] {
         margin: 0 -24px;
     }
 
-    .foot>* {
+    .foot > * {
         padding-left: 28px;
         padding-right: 28px;
     }
@@ -1920,7 +1908,6 @@ input[type="number"] {
         font-size: 34px;
     }
 
-    /* Drawer becomes centered modal on tablet+ */
     #drawer-overlay {
         align-items: center;
         padding: 24px;
@@ -1946,7 +1933,6 @@ input[type="number"] {
    DESKTOP — 1024px+
    ============================================ */
 @media (min-width: 1024px) {
-    /* Show sidebar, hide top nav tabs (sidebar handles nav) */
     .sidebar {
         display: flex;
     }
@@ -1955,9 +1941,12 @@ input[type="number"] {
         display: none;
     }
 
-    /* Top nav centers with nothing to show — just a clean border line */
+    /* Top nav becomes a slim divider line — no content */
     .top-nav {
-        justify-content: center;
+        height: 1px;
+        padding: 0;
+        border-bottom: 1px solid var(--gb);
+        overflow: hidden;
     }
 
     .view-wrap {
@@ -1976,7 +1965,7 @@ input[type="number"] {
         padding: 0 20px 20px;
     }
 
-    .foot>* {
+    .foot > * {
         padding-left: 32px;
         padding-right: 32px;
     }
@@ -2069,7 +2058,7 @@ input[type="number"] {
    ============================================ */
 @media (max-width: 374px) {
     .hdr {
-        padding: max(env(safe-area-inset-top, 8px), 8px) 12px 8px;
+        padding: 8px 12px;
         gap: 8px;
     }
 
@@ -2146,6 +2135,10 @@ input[type="number"] {
     .foot-big-num {
         font-size: 26px;
     }
+
+    .tab-txt {
+        font-size: 12px;
+    }
 }
 
 /* ============================================
@@ -2153,7 +2146,7 @@ input[type="number"] {
    ============================================ */
 @media (max-height: 600px) {
     .hdr {
-        padding: max(env(safe-area-inset-top, 6px), 6px) 14px 6px;
+        padding: 6px 14px;
     }
 
     .hdr-text p {
@@ -2217,6 +2210,10 @@ input[type="number"] {
    LANDSCAPE MOBILE — max-height 450px
    ============================================ */
 @media (max-height: 450px) and (orientation: landscape) {
+    :root {
+        --mob-nav-h: 38px;
+    }
+
     .hdr {
         padding: 4px 16px;
     }
