@@ -4,22 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="images/favi.png">
 
+    <!-- PWA / Mobile App Meta -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ThriftStore">
     <link rel="apple-touch-icon" href="./images/icon.svg">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#0e0e10">
     <link rel="manifest" href="manifest.json">
 
     <title>Thrift Store</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <!-- ===== DELETE MODAL ===== -->
+    <!-- ===== DELETE / CLEAR MODAL ===== -->
     <div class="overlay" id="modal-overlay">
         <div class="modal" id="modal">
             <div class="modal-icon" id="modal-icon">
@@ -77,221 +85,330 @@
         </div>
     </div>
 
-    <!-- ===== VIEW STACK (holds both pages) ===== -->
-    <div class="view-stack">
+    <!-- ===== PWA INSTALL BANNER ===== -->
+    <div class="pwa-banner" id="pwa-banner">
+        <div class="pwa-banner-ico">T</div>
+        <div class="pwa-banner-text">
+            <strong>Install ThriftCalc</strong>
+            <span>Add to home screen for quick access</span>
+        </div>
+        <div class="pwa-banner-actions">
+            <button class="pwa-install-btn" id="pwa-install">Install</button>
+            <button class="pwa-dismiss-btn" id="pwa-dismiss">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+    </div>
 
-        <!-- ===== GOODWILL ===== -->
-        <section class="view on" id="view-goodwill" data-store="gw">
-            <div class="view-wrap">
+    <!-- ===== APP SHELL ===== -->
+    <div class="app-shell">
 
-                <header class="hdr hdr-gw">
-                    <div class="hdr-text">
-                        <h1>Goodwill</h1>
-                        <p>Price Calculator</p>
-                    </div>
-                    <div class="hdr-stats">
-                        <div class="stat">
-                            <span class="stat-num" id="gw-stat-items">0</span>
-                            <span class="stat-lbl">ITEMS</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-num" id="gw-stat-saved">$0</span>
-                            <span class="stat-lbl">SAVED</span>
-                        </div>
-                    </div>
-                </header>
+        <!-- ===== TOP NAV BAR (Tablet / Desktop) ===== -->
+        <nav class="top-nav" id="top-nav">
+            <div class="top-nav-brand">
+                <div class="top-nav-logo">T</div>
+                <span class="top-nav-title">ThriftCalc</span>
+            </div>
 
-                <div class="panel shut" id="gw-panel">
-                    <button class="panel-bar" id="gw-panel-bar">
-                        <span>New Item</span>
-                        <span class="panel-plus" id="gw-plus">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5">
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                                <line class="vl" x1="12" y1="5" x2="12" y2="19"/>
+            <div class="top-nav-tabs" id="top-nav-tabs">
+                <button class="top-nav-tab on" data-tab="goodwill">
+                    <span class="top-nav-tab-ico">G</span>
+                    Goodwill
+                </button>
+                <button class="top-nav-tab" data-tab="svdp">
+                    <span class="top-nav-tab-ico">V</span>
+                    St. Vincent
+                </button>
+            </div>
+
+            <div class="top-nav-spacer"></div>
+
+            <div class="top-nav-actions">
+                <button class="top-nav-action" id="top-nav-theme" title="Toggle theme">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- ===== CONTENT AREA (sidebar + views) ===== -->
+        <div class="content-area">
+
+            <!-- ===== SIDEBAR (Desktop 1024px+) ===== -->
+            <aside class="sidebar" id="sidebar">
+                <span class="sidebar-section-label">Stores</span>
+
+                <button class="sidebar-item on" data-tab="goodwill">
+                    <span class="sidebar-active-bar"></span>
+                    <span class="sidebar-ico">G</span>
+                    Goodwill
+                </button>
+                <button class="sidebar-item" data-tab="svdp">
+                    <span class="sidebar-active-bar"></span>
+                    <span class="sidebar-ico">V</span>
+                    St. Vincent de Paul
+                </button>
+
+                <div class="sidebar-divider"></div>
+                <span class="sidebar-section-label">Quick Info</span>
+
+                <div class="sidebar-footer">
+                    <button class="sidebar-item" id="sidebar-about">
+                        <span class="sidebar-ico">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="16" x2="12" y2="12"/>
+                                <line x1="12" y1="8" x2="12.01" y2="8"/>
                             </svg>
                         </span>
+                        About
                     </button>
-                    <div class="panel-body">
-                        <div class="panel-inner">
-                            <div class="row">
-                                <div class="fld grow">
-                                    <label for="gw-name">Name</label>
-                                    <div class="inp">
-                                        <svg class="inp-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-                                            <line x1="7" y1="7" x2="7.01" y2="7"/>
-                                        </svg>
-                                        <input type="text" id="gw-name" placeholder="What did you find?" autocomplete="off" autocorrect="off" spellcheck="false">
-                                    </div>
+                </div>
+            </aside>
+
+            <!-- ===== VIEW STACK ===== -->
+            <div class="view-stack" id="view-stack">
+
+                <!-- ===== GOODWILL VIEW ===== -->
+                <section class="view on" id="view-goodwill" data-store="gw">
+                    <div class="view-wrap">
+
+                        <header class="hdr hdr-gw">
+                            <div class="hdr-text">
+                                <h1>Goodwill</h1>
+                                <p>Price Calculator</p>
+                            </div>
+                            <div class="hdr-stats">
+                                <div class="stat">
+                                    <span class="stat-num" id="gw-stat-items">0</span>
+                                    <span class="stat-lbl">ITEMS</span>
                                 </div>
-                                <div class="fld fixed">
-                                    <label for="gw-price">Price</label>
-                                    <div class="inp inp-price">
-                                        <span class="dollar">$</span>
-                                        <input type="number" id="gw-price" placeholder="0.00" step="0.01" min="0" inputmode="decimal" autocomplete="off">
-                                    </div>
+                                <div class="stat">
+                                    <span class="stat-num" id="gw-stat-saved">$0</span>
+                                    <span class="stat-lbl">SAVED</span>
                                 </div>
                             </div>
-                            <label class="sm-label">Discount</label>
-                            <div class="chips">
-                                <button class="chip on" data-s="gw" data-d="0"><b>0%</b><small>Full</small></button>
-                                <button class="chip" data-s="gw" data-d="50"><b>50%</b><small>Half</small></button>
-                                <button class="chip" data-s="gw" data-d="75"><b>75%</b><small>Best</small></button>
-                            </div>
-                            <div class="peek">
-                                <div class="peek-top">
-                                    <span class="peek-lbl">You Pay</span>
-                                    <span class="peek-val" id="gw-peek">$0.00</span>
-                                </div>
-                                <div class="peek-track"><div class="peek-fill gw-fill" id="gw-fill" style="width:100%"></div></div>
-                            </div>
-                            <button class="add-btn gw-add" id="gw-add">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                                    <line x1="12" y1="5" x2="12" y2="19"/>
-                                    <line x1="5" y1="12" x2="19" y2="12"/>
-                                </svg>
-                                Add Item
+                        </header>
+
+                        <!-- New Item Panel -->
+                        <div class="panel shut" id="gw-panel">
+                            <button class="panel-bar" id="gw-panel-bar">
+                                <span>New Item</span>
+                                <span class="panel-plus" id="gw-plus">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5">
+                                        <line x1="5" y1="12" x2="19" y2="12"/>
+                                        <line class="vl" x1="12" y1="5" x2="12" y2="19"/>
+                                    </svg>
+                                </span>
                             </button>
+                            <div class="panel-body">
+                                <div class="panel-inner">
+                                    <div class="row">
+                                        <div class="fld grow">
+                                            <label for="gw-name">Name</label>
+                                            <div class="inp">
+                                                <svg class="inp-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                                                    <line x1="7" y1="7" x2="7.01" y2="7"/>
+                                                </svg>
+                                                <input type="text" id="gw-name" placeholder="What did you find?" autocomplete="off" autocorrect="off" spellcheck="false">
+                                            </div>
+                                        </div>
+                                        <div class="fld fixed">
+                                            <label for="gw-price">Price</label>
+                                            <div class="inp inp-price">
+                                                <span class="dollar">$</span>
+                                                <input type="number" id="gw-price" placeholder="0.00" step="0.01" min="0" inputmode="decimal" autocomplete="off">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <label class="sm-label">Discount</label>
+                                    <div class="chips">
+                                        <button class="chip on" data-s="gw" data-d="0"><b>0%</b><small>Full</small></button>
+                                        <button class="chip" data-s="gw" data-d="50"><b>50%</b><small>Half</small></button>
+                                        <button class="chip" data-s="gw" data-d="75"><b>75%</b><small>Best</small></button>
+                                    </div>
+                                    <div class="peek">
+                                        <div class="peek-top">
+                                            <span class="peek-lbl">You Pay</span>
+                                            <span class="peek-val" id="gw-peek">$0.00</span>
+                                        </div>
+                                        <div class="peek-track">
+                                            <div class="peek-fill gw-fill" id="gw-fill" style="width:100%"></div>
+                                        </div>
+                                    </div>
+                                    <button class="add-btn gw-add" id="gw-add">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                            <line x1="12" y1="5" x2="12" y2="19"/>
+                                            <line x1="5" y1="12" x2="19" y2="12"/>
+                                        </svg>
+                                        Add Item
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="items-box">
-                    <div class="items-top">
-                        <h2>Your Finds</h2>
-                        <span class="badge" id="gw-badge">0 items</span>
-                        <button class="nuke" id="gw-nuke">Clear All</button>
-                    </div>
-                    <div class="items-list" id="gw-list"></div>
-                </div>
+                        <!-- Items List -->
+                        <div class="items-box">
+                            <div class="items-top">
+                                <h2>Your Finds</h2>
+                                <span class="badge" id="gw-badge">0 items</span>
+                                <button class="nuke" id="gw-nuke">Clear All</button>
+                            </div>
+                            <div class="items-list" id="gw-list"></div>
+                        </div>
 
-                <div class="foot gw-foot" id="gw-foot" hidden>
-                    <div class="foot-rows">
-                        <div class="foot-row"><span>Subtotal</span><span id="gw-sub">$0.00</span></div>
-                        <div class="foot-row hl"><span>You Save</span><span id="gw-sav">-$0.00</span></div>
+                        <!-- Totals Footer -->
+                        <div class="foot gw-foot" id="gw-foot" hidden>
+                            <div class="foot-rows">
+                                <div class="foot-row"><span>Subtotal</span><span id="gw-sub">$0.00</span></div>
+                                <div class="foot-row hl"><span>You Save</span><span id="gw-sav">-$0.00</span></div>
+                            </div>
+                            <div class="foot-big">
+                                <span class="foot-big-lbl">Total</span>
+                                <span class="foot-big-num" id="gw-tot">$0.00</span>
+                            </div>
+                        </div>
+
                     </div>
-                    <div class="foot-big">
-                        <span class="foot-big-lbl">Total</span>
-                        <span class="foot-big-num" id="gw-tot">$0.00</span>
+                </section>
+
+                <!-- ===== ST. VINCENT DE PAUL VIEW ===== -->
+                <section class="view" id="view-svdp" data-store="sv">
+                    <div class="view-wrap">
+
+                        <header class="hdr hdr-sv">
+                            <div class="hdr-text">
+                                <h1>St. Vincent de Paul</h1>
+                                <p>Price Calculator</p>
+                            </div>
+                            <div class="hdr-stats">
+                                <div class="stat">
+                                    <span class="stat-num" id="sv-stat-items">0</span>
+                                    <span class="stat-lbl">ITEMS</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-num" id="sv-stat-saved">$0</span>
+                                    <span class="stat-lbl">SAVED</span>
+                                </div>
+                            </div>
+                        </header>
+
+                        <!-- New Item Panel -->
+                        <div class="panel shut" id="sv-panel">
+                            <button class="panel-bar" id="sv-panel-bar">
+                                <span>New Item</span>
+                                <span class="panel-plus" id="sv-plus">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5">
+                                        <line x1="5" y1="12" x2="19" y2="12"/>
+                                        <line class="vl" x1="12" y1="5" x2="12" y2="19"/>
+                                    </svg>
+                                </span>
+                            </button>
+                            <div class="panel-body">
+                                <div class="panel-inner">
+                                    <div class="row">
+                                        <div class="fld grow">
+                                            <label for="sv-name">Name</label>
+                                            <div class="inp">
+                                                <svg class="inp-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                                                    <line x1="7" y1="7" x2="7.01" y2="7"/>
+                                                </svg>
+                                                <input type="text" id="sv-name" placeholder="What did you find?" autocomplete="off" autocorrect="off" spellcheck="false">
+                                            </div>
+                                        </div>
+                                        <div class="fld fixed">
+                                            <label for="sv-price">Price</label>
+                                            <div class="inp inp-price">
+                                                <span class="dollar">$</span>
+                                                <input type="number" id="sv-price" placeholder="0.00" step="0.01" min="0" inputmode="decimal" autocomplete="off">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <label class="sm-label">Discount</label>
+                                    <div class="chips">
+                                        <button class="chip on" data-s="sv" data-d="0"><b>0%</b><small>Full</small></button>
+                                        <button class="chip" data-s="sv" data-d="25"><b>25%</b><small>Quarter</small></button>
+                                        <button class="chip" data-s="sv" data-d="50"><b>50%</b><small>Half</small></button>
+                                    </div>
+                                    <div class="peek">
+                                        <div class="peek-top">
+                                            <span class="peek-lbl">You Pay</span>
+                                            <span class="peek-val" id="sv-peek">$0.00</span>
+                                        </div>
+                                        <div class="peek-track">
+                                            <div class="peek-fill sv-fill" id="sv-fill" style="width:100%"></div>
+                                        </div>
+                                    </div>
+                                    <button class="add-btn sv-add" id="sv-add">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                            <line x1="12" y1="5" x2="12" y2="19"/>
+                                            <line x1="5" y1="12" x2="19" y2="12"/>
+                                        </svg>
+                                        Add Item
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Items List -->
+                        <div class="items-box">
+                            <div class="items-top">
+                                <h2>Your Finds</h2>
+                                <span class="badge" id="sv-badge">0 items</span>
+                                <button class="nuke" id="sv-nuke">Clear All</button>
+                            </div>
+                            <div class="items-list" id="sv-list"></div>
+                        </div>
+
+                        <!-- Totals Footer -->
+                        <div class="foot sv-foot" id="sv-foot" hidden>
+                            <div class="foot-rows">
+                                <div class="foot-row"><span>Subtotal</span><span id="sv-sub">$0.00</span></div>
+                                <div class="foot-row hl"><span>You Save</span><span id="sv-sav">-$0.00</span></div>
+                            </div>
+                            <div class="foot-big">
+                                <span class="foot-big-lbl">Total</span>
+                                <span class="foot-big-num" id="sv-tot">$0.00</span>
+                            </div>
+                        </div>
+
                     </div>
-                </div>
+                </section>
 
             </div>
-        </section>
+            <!-- ===== END VIEW STACK ===== -->
 
-        <!-- ===== ST VINCENT ===== -->
-        <section class="view" id="view-svdp" data-store="sv">
-            <div class="view-wrap">
+        </div>
+        <!-- ===== END CONTENT AREA ===== -->
 
-                <header class="hdr hdr-sv">
-                    <div class="hdr-text">
-                        <h1>St. Vincent de Paul</h1>
-                        <p>Price Calculator</p>
-                    </div>
-                    <div class="hdr-stats">
-                        <div class="stat">
-                            <span class="stat-num" id="sv-stat-items">0</span>
-                            <span class="stat-lbl">ITEMS</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-num" id="sv-stat-saved">$0</span>
-                            <span class="stat-lbl">SAVED</span>
-                        </div>
-                    </div>
-                </header>
-
-                <div class="panel shut" id="sv-panel">
-                    <button class="panel-bar" id="sv-panel-bar">
-                        <span>New Item</span>
-                        <span class="panel-plus" id="sv-plus">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5">
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                                <line class="vl" x1="12" y1="5" x2="12" y2="19"/>
-                            </svg>
-                        </span>
-                    </button>
-                    <div class="panel-body">
-                        <div class="panel-inner">
-                            <div class="row">
-                                <div class="fld grow">
-                                    <label for="sv-name">Name</label>
-                                    <div class="inp">
-                                        <svg class="inp-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-                                            <line x1="7" y1="7" x2="7.01" y2="7"/>
-                                        </svg>
-                                        <input type="text" id="sv-name" placeholder="What did you find?" autocomplete="off" autocorrect="off" spellcheck="false">
-                                    </div>
-                                </div>
-                                <div class="fld fixed">
-                                    <label for="sv-price">Price</label>
-                                    <div class="inp inp-price">
-                                        <span class="dollar">$</span>
-                                        <input type="number" id="sv-price" placeholder="0.00" step="0.01" min="0" inputmode="decimal" autocomplete="off">
-                                    </div>
-                                </div>
-                            </div>
-                            <label class="sm-label">Discount</label>
-                            <div class="chips">
-                                <button class="chip on" data-s="sv" data-d="0"><b>0%</b><small>Full</small></button>
-                                <button class="chip" data-s="sv" data-d="25"><b>25%</b><small>Quarter</small></button>
-                                <button class="chip" data-s="sv" data-d="50"><b>50%</b><small>Half</small></button>
-                            </div>
-                            <div class="peek">
-                                <div class="peek-top">
-                                    <span class="peek-lbl">You Pay</span>
-                                    <span class="peek-val" id="sv-peek">$0.00</span>
-                                </div>
-                                <div class="peek-track"><div class="peek-fill sv-fill" id="sv-fill" style="width:100%"></div></div>
-                            </div>
-                            <button class="add-btn sv-add" id="sv-add">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                                    <line x1="12" y1="5" x2="12" y2="19"/>
-                                    <line x1="5" y1="12" x2="19" y2="12"/>
-                                </svg>
-                                Add Item
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="items-box">
-                    <div class="items-top">
-                        <h2>Your Finds</h2>
-                        <span class="badge" id="sv-badge">0 items</span>
-                        <button class="nuke" id="sv-nuke">Clear All</button>
-                    </div>
-                    <div class="items-list" id="sv-list"></div>
-                </div>
-
-                <div class="foot sv-foot" id="sv-foot" hidden>
-                    <div class="foot-rows">
-                        <div class="foot-row"><span>Subtotal</span><span id="sv-sub">$0.00</span></div>
-                        <div class="foot-row hl"><span>You Save</span><span id="sv-sav">-$0.00</span></div>
-                    </div>
-                    <div class="foot-big">
-                        <span class="foot-big-lbl">Total</span>
-                        <span class="foot-big-num" id="sv-tot">$0.00</span>
-                    </div>
-                </div>
-
-            </div>
-        </section>
+        <!-- ===== MOBILE TAB BAR ===== -->
+        <nav class="tabs" id="tabs">
+            <button class="tab on" data-tab="goodwill">
+                <span class="tab-ico gw-ico">G</span>
+                <span class="tab-txt">Goodwill</span>
+            </button>
+            <button class="tab" data-tab="svdp">
+                <span class="tab-ico sv-ico">V</span>
+                <span class="tab-txt">St. Vincent</span>
+            </button>
+        </nav>
 
     </div>
-    <!-- ===== END VIEW STACK ===== -->
-
-    <!-- ===== BOTTOM TABS (must be AFTER view-stack for flex order to work) ===== -->
-    <nav class="tabs" id="tabs">
-        <button class="tab on" data-tab="goodwill">
-            <span class="tab-ico gw-ico">G</span>
-            <span class="tab-txt">Goodwill</span>
-        </button>
-        <button class="tab" data-tab="svdp">
-            <span class="tab-ico sv-ico">V</span>
-            <span class="tab-txt">St. Vincent</span>
-        </button>
-    </nav>
+    <!-- ===== END APP SHELL ===== -->
 
     <script src="script.js"></script>
 </body>

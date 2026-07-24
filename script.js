@@ -2,28 +2,16 @@
     'use strict';
 
     // ═══════════════════════════════════════════════════
-    // APP HEIGHT — the single source of truth
+    // APP HEIGHT
     // ═══════════════════════════════════════════════════
-    // In PWA mode on iOS, we want body height to match the FULL screen
-    // (not just visualViewport which excludes the home indicator zone).
-    // Body has padding-bottom: env(safe-area-inset-bottom) which pushes
-    // the tab bar UP into the visible area, leaving the safe-area zone
-    // painted by html's background — no gap possible.
-
     function setAppHeight() {
-        // Use window.innerHeight — this reports the full drawable area
-        // in PWA standalone mode, INCLUDING the home indicator zone.
         var h = window.innerHeight;
-
-        // Fallback to visualViewport if innerHeight seems wrong (keyboard open)
         if (window.visualViewport && window.visualViewport.height > h) {
             h = window.visualViewport.height;
         }
-
         document.documentElement.style.setProperty('--app-h', h + 'px');
     }
 
-    // Initial + delayed calls to catch PWA initialization
     setAppHeight();
     setTimeout(setAppHeight, 50);
     setTimeout(setAppHeight, 200);
@@ -39,7 +27,6 @@
     window.addEventListener('pageshow', setAppHeight);
     window.addEventListener('focus', setAppHeight);
 
-    // PWA resume from background
     document.addEventListener('visibilitychange', function () {
         if (!document.hidden) {
             setAppHeight();
@@ -57,7 +44,7 @@
     var lastTap = 0;
     document.addEventListener('touchend', function (e) {
         var now = Date.now();
-        if (now - lastTap < 300 && e.target.closest('button, .chip, .panel-bar, .tab')) {
+        if (now - lastTap < 300 && e.target.closest('button, .chip, .panel-bar, .tab, .top-nav-tab, .sidebar-item')) {
             e.preventDefault();
         }
         lastTap = now;
@@ -96,24 +83,76 @@
     var ui = {};
     ['gw', 'sv'].forEach(function (s) {
         ui[s] = {
-            name: el(s + '-name'),
-            price: el(s + '-price'),
-            add: el(s + '-add'),
-            nuke: el(s + '-nuke'),
-            list: el(s + '-list'),
-            foot: el(s + '-foot'),
-            sub: el(s + '-sub'),
-            sav: el(s + '-sav'),
-            tot: el(s + '-tot'),
-            statI: el(s + '-stat-items'),
-            statS: el(s + '-stat-saved'),
-            peek: el(s + '-peek'),
-            fill: el(s + '-fill'),
-            badge: el(s + '-badge'),
-            panel: el(s + '-panel'),
-            bar: el(s + '-panel-bar'),
+            name:     el(s + '-name'),
+            price:    el(s + '-price'),
+            add:      el(s + '-add'),
+            nuke:     el(s + '-nuke'),
+            list:     el(s + '-list'),
+            foot:     el(s + '-foot'),
+            sub:      el(s + '-sub'),
+            sav:      el(s + '-sav'),
+            tot:      el(s + '-tot'),
+            statI:    el(s + '-stat-items'),
+            statS:    el(s + '-stat-saved'),
+            peek:     el(s + '-peek'),
+            fill:     el(s + '-fill'),
+            badge:    el(s + '-badge'),
+            panel:    el(s + '-panel'),
+            bar:      el(s + '-panel-bar'),
             badgeCls: s + '-bg'
         };
+    });
+
+    // ═══════════════════════════════════════════════════
+    // ACTIVE STORE TRACKING
+    // ═══════════════════════════════════════════════════
+    var activeStore = 'gw';
+
+    // ═══════════════════════════════════════════════════
+    // NAVIGATION — shared switch function
+    // ═══════════════════════════════════════════════════
+    var views = {
+        goodwill: el('view-goodwill'),
+        svdp:     el('view-svdp')
+    };
+
+    // All navigation triggers: bottom tabs + top nav tabs + sidebar items
+    var allNavBtns = document.querySelectorAll('.tab, .top-nav-tab, .sidebar-item[data-tab]');
+
+    function switchTab(tabKey) {
+        // Determine store key from tab key
+        activeStore = (tabKey === 'goodwill') ? 'gw' : 'sv';
+
+        // Update all nav button states
+        allNavBtns.forEach(function (b) {
+            var t = b.getAttribute('data-tab');
+            if (t) {
+                b.classList.toggle('on', t === tabKey);
+            }
+        });
+
+        // Update view visibility
+        Object.keys(views).forEach(function (k) {
+            views[k].classList.remove('on');
+        });
+        if (views[tabKey]) {
+            views[tabKey].classList.add('on');
+            // Trigger re-animation
+            views[tabKey].style.animation = 'none';
+            views[tabKey].offsetHeight; // reflow
+            views[tabKey].style.animation = '';
+        }
+
+        // Blur any focused element
+        if (document.activeElement) document.activeElement.blur();
+        vib(5);
+    }
+
+    allNavBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var t = btn.getAttribute('data-tab');
+            if (t) switchTab(t);
+        });
     });
 
     // ═══════════════════════════════════════════════════
@@ -136,19 +175,19 @@
     // MODAL
     // ═══════════════════════════════════════════════════
     var mOverlay = el('modal-overlay');
-    var mModal = el('modal');
-    var mTitle = el('modal-title');
-    var mMsg = el('modal-msg');
-    var mNo = el('modal-no');
-    var mYes = el('modal-yes');
-    var mCb = null;
+    var mModal   = el('modal');
+    var mTitle   = el('modal-title');
+    var mMsg     = el('modal-msg');
+    var mNo      = el('modal-no');
+    var mYes     = el('modal-yes');
+    var mCb      = null;
 
     function askModal(title, msg, btnText, variant) {
         mTitle.textContent = title;
-        mMsg.textContent = msg;
-        mYes.textContent = btnText || 'Remove';
-        mModal.className = 'modal';
-        if (variant === 'sv') mModal.classList.add('sv-m');
+        mMsg.textContent   = msg;
+        mYes.textContent   = btnText || 'Remove';
+        mModal.className   = 'modal';
+        if (variant === 'sv')     mModal.classList.add('sv-m');
         else if (variant === 'danger') mModal.classList.add('danger-m');
         mOverlay.classList.add('on');
         vib(10);
@@ -169,29 +208,32 @@
     // ═══════════════════════════════════════════════════
     // DRAWER
     // ═══════════════════════════════════════════════════
-    var dOverlay = el('drawer-overlay');
-    var dClose = el('drawer-x');
-    var dName = el('ed-name');
-    var dPrice = el('ed-price');
-    var dChips = el('ed-chips');
-    var dFinal = el('ed-final');
-    var dSave = el('ed-save');
-    var editStore = null, editId = null, editDisc = 0;
+    var dOverlay  = el('drawer-overlay');
+    var dClose    = el('drawer-x');
+    var dName     = el('ed-name');
+    var dPrice    = el('ed-price');
+    var dChips    = el('ed-chips');
+    var dFinal    = el('ed-final');
+    var dSave     = el('ed-save');
+    var editStore = null;
+    var editId    = null;
+    var editDisc  = 0;
 
     function openDrawer(store, id) {
         editStore = store;
-        editId = id;
-        var item = data[store].items.filter(function (i) { return i.id === id; })[0];
+        editId    = id;
+        var item  = data[store].items.filter(function (i) { return i.id === id; })[0];
         if (!item) return;
 
-        dName.value = item.name;
+        dName.value  = item.name;
         dPrice.value = item.orig.toFixed(2);
-        editDisc = item.disc;
+        editDisc     = item.disc;
 
+        // Build discount chips inside drawer
         dChips.innerHTML = '';
         data[store].opts.forEach(function (d) {
             var b = document.createElement('button');
-            b.className = 'd-chip';
+            b.className   = 'd-chip';
             b.textContent = d === 0 ? 'Full Price' : d + '% Off';
             b.setAttribute('data-d', d);
             if (d === editDisc) {
@@ -217,7 +259,7 @@
     function closeDrawer() {
         dOverlay.classList.remove('on');
         editStore = null;
-        editId = null;
+        editId    = null;
         if (document.activeElement) document.activeElement.blur();
     }
 
@@ -247,10 +289,10 @@
             return;
         }
 
-        item.name = n;
-        item.orig = p;
-        item.disc = editDisc;
-        item.save = p * (editDisc / 100);
+        item.name  = n;
+        item.orig  = p;
+        item.disc  = editDisc;
+        item.save  = p * (editDisc / 100);
         item.final = p - item.save;
 
         render(editStore);
@@ -271,39 +313,14 @@
     });
 
     // ═══════════════════════════════════════════════════
-    // TABS
-    // ═══════════════════════════════════════════════════
-    var tabBtns = document.querySelectorAll('.tab');
-    var views = {
-        goodwill: el('view-goodwill'),
-        svdp: el('view-svdp')
-    };
-
-    tabBtns.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var t = btn.getAttribute('data-tab');
-            tabBtns.forEach(function (b) { b.classList.remove('on'); });
-            btn.classList.add('on');
-
-            Object.keys(views).forEach(function (k) { views[k].classList.remove('on'); });
-            views[t].classList.add('on');
-
-            views[t].style.animation = 'none';
-            views[t].offsetHeight;
-            views[t].style.animation = '';
-
-            if (document.activeElement) document.activeElement.blur();
-            vib(5);
-        });
-    });
-
-    // ═══════════════════════════════════════════════════
-    // CHIPS
+    // CHIPS (add-form discount selectors)
     // ═══════════════════════════════════════════════════
     document.querySelectorAll('.chip').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var s = btn.getAttribute('data-s');
-            btn.parentElement.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('on'); });
+            btn.parentElement.querySelectorAll('.chip').forEach(function (c) {
+                c.classList.remove('on');
+            });
             btn.classList.add('on');
             data[s].disc = parseInt(btn.getAttribute('data-d'));
             preview(s);
@@ -311,14 +328,14 @@
     });
 
     // ═══════════════════════════════════════════════════
-    // PREVIEW
+    // PREVIEW (live price calculation in add form)
     // ═══════════════════════════════════════════════════
     function preview(s) {
         var p = parseFloat(ui[s].price.value) || 0;
         var d = data[s].disc;
         var f = p * (1 - d / 100);
-        ui[s].peek.textContent = fmt(f);
-        ui[s].fill.style.width = (p > 0 ? (f / p) * 100 : 100) + '%';
+        ui[s].peek.textContent      = fmt(f);
+        ui[s].fill.style.width      = (p > 0 ? (f / p) * 100 : 100) + '%';
     }
 
     ['gw', 'sv'].forEach(function (s) {
@@ -326,29 +343,29 @@
     });
 
     // ═══════════════════════════════════════════════════
-    // ADD
+    // ADD ITEM
     // ═══════════════════════════════════════════════════
     function addItem(s) {
-        var n = ui[s].name.value.trim();
-        var p = parseFloat(ui[s].price.value);
-
+        var n  = ui[s].name.value.trim();
+        var p  = parseFloat(ui[s].price.value);
         var ok = true;
-        if (!n) { flash(ui[s].name.closest('.fld')); ok = false; }
+
+        if (!n)              { flash(ui[s].name.closest('.fld'));  ok = false; }
         if (isNaN(p) || p <= 0) { flash(ui[s].price.closest('.fld')); ok = false; }
         if (!ok) return;
 
-        var d = data[s].disc;
+        var d  = data[s].disc;
         var sv = p * (d / 100);
         data[s].items.push({
-            id: Date.now() + Math.random(),
-            name: n,
-            orig: p,
-            disc: d,
-            save: sv,
+            id:    Date.now() + Math.random(),
+            name:  n,
+            orig:  p,
+            disc:  d,
+            save:  sv,
             final: p - sv
         });
 
-        ui[s].name.value = '';
+        ui[s].name.value  = '';
         ui[s].price.value = '';
         preview(s);
 
@@ -363,7 +380,7 @@
     }
 
     // ═══════════════════════════════════════════════════
-    // REMOVE
+    // REMOVE ITEM
     // ═══════════════════════════════════════════════════
     function removeItem(s, id) {
         var item = data[s].items.filter(function (i) { return i.id === id; })[0];
@@ -379,14 +396,14 @@
 
             var row = ui[s].list.querySelector('[data-id="' + id + '"]');
             if (row) {
-                row.style.transition = 'all .28s ease';
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(30px) scale(.94)';
-                row.style.maxHeight = '0';
-                row.style.marginBottom = '0';
-                row.style.paddingTop = '0';
+                row.style.transition    = 'all .28s ease';
+                row.style.opacity       = '0';
+                row.style.transform     = 'translateX(30px) scale(.94)';
+                row.style.maxHeight     = '0';
+                row.style.marginBottom  = '0';
+                row.style.paddingTop    = '0';
                 row.style.paddingBottom = '0';
-                row.style.overflow = 'hidden';
+                row.style.overflow      = 'hidden';
 
                 setTimeout(function () {
                     data[s].items = data[s].items.filter(function (i) { return i.id !== id; });
@@ -402,7 +419,7 @@
     }
 
     // ═══════════════════════════════════════════════════
-    // CLEAR
+    // CLEAR ALL
     // ═══════════════════════════════════════════════════
     function clearAll(s) {
         if (data[s].items.length === 0) return;
@@ -422,10 +439,10 @@
     }
 
     // ═══════════════════════════════════════════════════
-    // RENDER
+    // RENDER LIST
     // ═══════════════════════════════════════════════════
     function render(s) {
-        var d = ui[s];
+        var d     = ui[s];
         var items = data[s].items;
         d.list.innerHTML = '';
 
@@ -443,6 +460,7 @@
                 '</div>' +
                 '<p>No items yet.<br>Tap <strong>New Item</strong> above to start.</p>';
             d.list.appendChild(emp);
+
         } else {
             d.foot.hidden = false;
 
@@ -457,8 +475,9 @@
 
                 var meta;
                 if (item.disc > 0) {
-                    meta = '<span class="og">' + fmt(item.orig) + '</span>' +
-                           '<span class="saved">saved ' + fmt(item.save) + '</span>';
+                    meta =
+                        '<span class="og">' + fmt(item.orig) + '</span>' +
+                        '<span class="saved">saved ' + fmt(item.save) + '</span>';
                 } else {
                     meta = '<span>Full price</span>';
                 }
@@ -501,8 +520,10 @@
             });
         }
 
+        // Update badge count
         d.badge.textContent = items.length + (items.length === 1 ? ' item' : ' items');
 
+        // Compute totals
         var subT = 0, totS = 0, totF = 0;
         items.forEach(function (i) {
             subT += i.orig;
@@ -510,9 +531,9 @@
             totF += i.final;
         });
 
-        d.sub.textContent = fmt(subT);
-        d.sav.textContent = '-' + fmt(totS);
-        d.tot.textContent = fmt(totF);
+        d.sub.textContent   = fmt(subT);
+        d.sav.textContent   = '-' + fmt(totS);
+        d.tot.textContent   = fmt(totF);
         d.statI.textContent = items.length;
         d.statS.textContent = short(totS);
     }
@@ -520,18 +541,18 @@
     // ═══════════════════════════════════════════════════
     // FLASH VALIDATION
     // ═══════════════════════════════════════════════════
-    function flash(el) {
-        if (!el) return;
-        el.classList.add('err', 'shake');
+    function flash(target) {
+        if (!target) return;
+        target.classList.add('err', 'shake');
         vib(30);
-        setTimeout(function () { el.classList.remove('err', 'shake'); }, 600);
+        setTimeout(function () { target.classList.remove('err', 'shake'); }, 600);
     }
 
     // ═══════════════════════════════════════════════════
     // BINDINGS
     // ═══════════════════════════════════════════════════
-    ui.gw.add.addEventListener('click', function () { addItem('gw'); });
-    ui.sv.add.addEventListener('click', function () { addItem('sv'); });
+    ui.gw.add.addEventListener('click',  function () { addItem('gw'); });
+    ui.sv.add.addEventListener('click',  function () { addItem('sv'); });
     ui.gw.nuke.addEventListener('click', function () { clearAll('gw'); });
     ui.sv.nuke.addEventListener('click', function () { clearAll('sv'); });
 
@@ -544,12 +565,102 @@
         });
     });
 
+    // Global keyboard shortcuts
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
-            if (dOverlay.classList.contains('on')) closeDrawer();
+            if (dOverlay.classList.contains('on'))      closeDrawer();
             else if (mOverlay.classList.contains('on')) closeModal(false);
         }
     });
+
+    // ═══════════════════════════════════════════════════
+    // PWA INSTALL BANNER
+    // ═══════════════════════════════════════════════════
+    var pwaBanner     = el('pwa-banner');
+    var pwaInstallBtn = el('pwa-install');
+    var pwaDismissBtn = el('pwa-dismiss');
+    var deferredPrompt = null;
+
+    // Capture the install prompt event
+    window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        deferredPrompt = e;
+
+        // Only show banner if not already installed
+        if (!window.matchMedia('(display-mode: standalone)').matches) {
+            setTimeout(function () {
+                pwaBanner.classList.add('show');
+            }, 2000);
+        }
+    });
+
+    // Install button clicked
+    if (pwaInstallBtn) {
+        pwaInstallBtn.addEventListener('click', function () {
+            if (!deferredPrompt) return;
+            pwaBanner.classList.remove('show');
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function (result) {
+                if (result.outcome === 'accepted') {
+                    console.log('PWA installed');
+                }
+                deferredPrompt = null;
+            });
+        });
+    }
+
+    // Dismiss banner
+    if (pwaDismissBtn) {
+        pwaDismissBtn.addEventListener('click', function () {
+            pwaBanner.classList.remove('show');
+            deferredPrompt = null;
+        });
+    }
+
+    // Hide banner if already running as installed PWA
+    window.addEventListener('appinstalled', function () {
+        pwaBanner.classList.remove('show');
+        deferredPrompt = null;
+    });
+
+    // ═══════════════════════════════════════════════════
+    // SIDEBAR ABOUT (placeholder — extend as needed)
+    // ═══════════════════════════════════════════════════
+    var sidebarAbout = el('sidebar-about');
+    if (sidebarAbout) {
+        sidebarAbout.addEventListener('click', function () {
+            askModal(
+                'About ThriftCalc',
+                'A fast price calculator for Goodwill and St. Vincent de Paul. Add items, apply discounts, and see your total savings instantly.',
+                'Got it',
+                'gw'
+            ).then(function () {});
+        });
+    }
+
+    // ═══════════════════════════════════════════════════
+    // TOP NAV THEME TOGGLE (placeholder — extend as needed)
+    // ═══════════════════════════════════════════════════
+    var topNavTheme = el('top-nav-theme');
+    if (topNavTheme) {
+        topNavTheme.addEventListener('click', function () {
+            // Placeholder: future light/dark toggle
+            vib(5);
+        });
+    }
+
+    // ═══════════════════════════════════════════════════
+    // SERVICE WORKER REGISTRATION (PWA offline support)
+    // ═══════════════════════════════════════════════════
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('./sw.js').then(function (reg) {
+                console.log('SW registered:', reg.scope);
+            }).catch(function (err) {
+                console.log('SW registration failed:', err);
+            });
+        });
+    }
 
     // ═══════════════════════════════════════════════════
     // INIT
