@@ -107,10 +107,10 @@ html, body { scrollbar-width: none; -ms-overflow-style: none; }
     backdrop-filter: saturate(180%) blur(24px);
     -webkit-backdrop-filter: saturate(180%) blur(24px);
     border-top: 1px solid var(--glass-border);
-    /* Tight height — just enough for icon + label */
-    height: auto;
-    padding: 6px 0;
-    padding-bottom: max(4px, env(safe-area-inset-bottom, 0px));
+    height: 52px;
+    padding: 0;
+    /* Safe area adds below the 52px bar */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .tab-btn {
@@ -161,11 +161,11 @@ html, body { scrollbar-width: none; -ms-overflow-style: none; }
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0;
-    /* ~50px nav content + safe area handled by max() */
-    bottom: calc(48px + max(4px, env(safe-area-inset-bottom, 0px)));
+    bottom: calc(52px + env(safe-area-inset-bottom, 0px));
     overflow: hidden;
     animation: pageIn 0.4s var(--ease-out);
 }
+
 .page.active { display: flex; flex-direction: column; }
 
 @keyframes pageIn {
