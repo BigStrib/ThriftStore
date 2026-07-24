@@ -878,3 +878,56 @@ input[type="number"] { -moz-appearance: textfield; }
     .view { display: block !important; position: static; overflow: visible; }
     html, body { position: static; overflow: visible; background: #fff; color: #000; }
 }
+
+
+
+
+
+
+/* Force root to JS height */
+html, body {
+    height: var(--app-h, 100vh) !important;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Force view stack to fill all vertical room above tabs */
+.view-stack {
+    flex: 1 !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 0 !important;
+}
+
+/* Force view container to stretch */
+.view.on {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column;
+    min-height: 0 !important;
+}
+
+.view-wrap {
+    flex: 1 !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 0 !important;
+}
+
+/* Force "Your Finds" box to fill the rest of the screen */
+.items-box {
+    flex: 1 !important;
+    min-height: 0 !important;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0 !important;
+}
+
+/* Keep tab bar fixed at the bottom edge */
+.tabs {
+    flex-shrink: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
