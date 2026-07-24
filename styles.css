@@ -42,7 +42,7 @@
     --out: cubic-bezier(0,0,.2,1);
 
     --tab-h: 54px;
-    --tab-total: calc(54px + env(safe-area-inset-bottom, 34px));
+    --tab-total: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px));
 }
 
 /* ============================================
@@ -152,17 +152,21 @@ input[type="number"] { -moz-appearance: textfield; }
     background: #0e0e10;
     border-top: 1px solid var(--gb);
     height: var(--tab-total);
-    padding-bottom: env(safe-area-inset-bottom, 34px);
+    /* REMOVE THIS LINE: padding-bottom: env(safe-area-inset-bottom, 34px); */
 }
 
 .tab {
     flex: 1;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
     gap: 3px;
     color: var(--t3);
     transition: color .25s var(--ease);
     position: relative;
+    /* Respect safe area bottom padding without breaking fallback height */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .tab::after {
