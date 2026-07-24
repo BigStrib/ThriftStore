@@ -2,21 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Thrift Store</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#0e0e10">
+    <title>Thrift Price Pro</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-	
-	
-	<meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ThriftStore">
-    <link rel="apple-touch-icon" href="./images/icon.svg">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000000">
-    <link rel="manifest" href="manifest.json">
 	
 	<link rel="icon" type="image/svg+xml" href="images/favi.png">
 </head>
@@ -52,13 +48,13 @@
             <div class="drawer-body">
                 <div class="field">
                     <label for="edit-name">Item Name</label>
-                    <input type="text" id="edit-name" placeholder="Item name" autocomplete="off" spellcheck="false">
+                    <input type="text" id="edit-name" placeholder="Item name" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 <div class="field">
                     <label for="edit-price">Tag Price</label>
                     <div class="field-price-wrap">
                         <span class="field-currency">$</span>
-                        <input type="number" id="edit-price" placeholder="0.00" step="0.01" min="0" autocomplete="off">
+                        <input type="number" id="edit-price" placeholder="0.00" step="0.01" min="0" inputmode="decimal" autocomplete="off">
                     </div>
                 </div>
                 <div class="field">
@@ -100,7 +96,6 @@
                 </div>
             </header>
 
-            <!-- Collapsible New Item -->
             <div class="new-item-section collapsed" id="gw-section">
                 <div class="new-item-toggle" id="gw-toggle">
                     <h2>New Item</h2>
@@ -117,14 +112,14 @@
                             <label for="gw-name">Name</label>
                             <div class="custom-input">
                                 <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                                <input type="text" id="gw-name" placeholder="What did you find?" autocomplete="off" spellcheck="false">
+                                <input type="text" id="gw-name" placeholder="What did you find?" autocomplete="off" autocorrect="off" spellcheck="false">
                             </div>
                         </div>
                         <div class="input-group shrink">
                             <label for="gw-price">Price</label>
                             <div class="custom-input price-field">
                                 <span class="input-currency">$</span>
-                                <input type="number" id="gw-price" placeholder="0.00" step="0.01" min="0" autocomplete="off">
+                                <input type="number" id="gw-price" placeholder="0.00" step="0.01" min="0" inputmode="decimal" autocomplete="off">
                             </div>
                         </div>
                     </div>
@@ -145,7 +140,6 @@
                 </div>
             </div>
 
-            <!-- List fills remaining -->
             <div class="list-section">
                 <div class="list-section-inner">
                     <div class="list-header">
@@ -153,12 +147,7 @@
                         <span class="item-count" id="gw-count">0 items</span>
                         <button class="btn-clear" id="gw-clear">Clear All</button>
                     </div>
-                    <div class="list-scroll" id="gw-list">
-                        <div class="empty-state" id="gw-empty">
-                            <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
-                            <p>No items yet.<br>Tap <strong>New Item</strong> to start.</p>
-                        </div>
-                    </div>
+                    <div class="list-scroll" id="gw-list"></div>
                 </div>
             </div>
 
@@ -207,14 +196,14 @@
                             <label for="sv-name">Name</label>
                             <div class="custom-input">
                                 <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                                <input type="text" id="sv-name" placeholder="What did you find?" autocomplete="off" spellcheck="false">
+                                <input type="text" id="sv-name" placeholder="What did you find?" autocomplete="off" autocorrect="off" spellcheck="false">
                             </div>
                         </div>
                         <div class="input-group shrink">
                             <label for="sv-price">Price</label>
                             <div class="custom-input price-field">
                                 <span class="input-currency">$</span>
-                                <input type="number" id="sv-price" placeholder="0.00" step="0.01" min="0" autocomplete="off">
+                                <input type="number" id="sv-price" placeholder="0.00" step="0.01" min="0" inputmode="decimal" autocomplete="off">
                             </div>
                         </div>
                     </div>
@@ -242,12 +231,7 @@
                         <span class="item-count" id="sv-count">0 items</span>
                         <button class="btn-clear" id="sv-clear">Clear All</button>
                     </div>
-                    <div class="list-scroll" id="sv-list">
-                        <div class="empty-state" id="sv-empty">
-                            <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
-                            <p>No items yet.<br>Tap <strong>New Item</strong> to start.</p>
-                        </div>
-                    </div>
+                    <div class="list-scroll" id="sv-list"></div>
                 </div>
             </div>
 
