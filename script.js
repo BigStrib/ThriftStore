@@ -44,7 +44,7 @@
     var lastTap = 0;
     document.addEventListener('touchend', function (e) {
         var now = Date.now();
-        if (now - lastTap < 300 && e.target.closest('button, .chip, .panel-bar, .tab, .top-nav-tab, .sidebar-item')) {
+        if (now - lastTap < 300 && e.target.closest('button, .chip, .panel-bar, .tab, .top-nav-tab, .sidebar-item, .irow')) {
             e.preventDefault();
         }
         lastTap = now;
@@ -70,12 +70,99 @@
     function vib(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
 
     // ═══════════════════════════════════════════════════
+    // LOCAL STORAGE
+    // ═══════════════════════════════════════════════════
+    var STORAGE_KEY = 'thriftstore_data';
+
+    function saveData() {
+        try {
+            var payload = {
+                gw: { items: data.gw.items, disc: data.gw.disc },
+                sv: { items: data.sv.items, disc: data.sv.disc },
+                activeTab: activeStore === 'gw' ? 'goodwill' : 'svdp',
+                version: 2
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        } catch (e) {
+            console.warn('Could not save to localStorage:', e);
+        }
+    }
+
+    function loadData() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return null;
+            var parsed = JSON.parse(raw);
+            if (!parsed || !parsed.gw || !parsed.sv) return null;
+            return parsed;
+        } catch (e) {
+            console.warn('Could not load from localStorage:', e);
+            return null;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // ACTIVE ROW MANAGEMENT
+    // ═══════════════════════════════════════════════════
+    var activeRow = null;
+    var activeRowTimeout = null;
+
+    function clearActiveRow() {
+        if (activeRowTimeout) {
+            clearTimeout(activeRowTimeout);
+            activeRowTimeout = null;
+        }
+        if (activeRow) {
+            activeRow.classList.remove('active');
+            activeRow = null;
+        }
+    }
+
+    function setActiveRow(row) {
+        if (activeRow === row) {
+            clearActiveRow();
+            return;
+        }
+        clearActiveRow();
+        activeRow = row;
+        row.classList.add('active');
+        vib(5);
+
+        activeRowTimeout = setTimeout(function () {
+            clearActiveRow();
+        }, 4000);
+    }
+
+    document.addEventListener('click', function (e) {
+        if (!activeRow) return;
+        if (e.target.closest('.irow') === activeRow) return;
+        if (e.target.closest('.overlay')) return;
+        clearActiveRow();
+    }, true);
+
+    document.addEventListener('scroll', function () {
+        clearActiveRow();
+    }, true);
+
+    // ═══════════════════════════════════════════════════
     // DATA
     // ═══════════════════════════════════════════════════
     var data = {
         gw: { items: [], disc: 0, opts: [0, 50, 75] },
         sv: { items: [], disc: 0, opts: [0, 25, 50] }
     };
+
+    var saved = loadData();
+    if (saved) {
+        if (saved.gw && Array.isArray(saved.gw.items)) {
+            data.gw.items = saved.gw.items;
+            data.gw.disc = saved.gw.disc || 0;
+        }
+        if (saved.sv && Array.isArray(saved.sv.items)) {
+            data.sv.items = saved.sv.items;
+            data.sv.disc = saved.sv.disc || 0;
+        }
+    }
 
     // ═══════════════════════════════════════════════════
     // DOM REFERENCES
@@ -109,43 +196,38 @@
     var activeStore = 'gw';
 
     // ═══════════════════════════════════════════════════
-    // NAVIGATION — shared switch function
+    // NAVIGATION
     // ═══════════════════════════════════════════════════
     var views = {
         goodwill: el('view-goodwill'),
         svdp:     el('view-svdp')
     };
 
-    // All navigation triggers: bottom tabs + top nav tabs + sidebar items
     var allNavBtns = document.querySelectorAll('.tab, .top-nav-tab, .sidebar-item[data-tab]');
 
     function switchTab(tabKey) {
-        // Determine store key from tab key
         activeStore = (tabKey === 'goodwill') ? 'gw' : 'sv';
+        clearActiveRow();
 
-        // Update all nav button states
         allNavBtns.forEach(function (b) {
             var t = b.getAttribute('data-tab');
-            if (t) {
-                b.classList.toggle('on', t === tabKey);
-            }
+            if (t) b.classList.toggle('on', t === tabKey);
         });
 
-        // Update view visibility
         Object.keys(views).forEach(function (k) {
             views[k].classList.remove('on');
         });
+
         if (views[tabKey]) {
             views[tabKey].classList.add('on');
-            // Trigger re-animation
             views[tabKey].style.animation = 'none';
-            views[tabKey].offsetHeight; // reflow
+            views[tabKey].offsetHeight;
             views[tabKey].style.animation = '';
         }
 
-        // Blur any focused element
         if (document.activeElement) document.activeElement.blur();
         vib(5);
+        saveData();
     }
 
     allNavBtns.forEach(function (btn) {
@@ -153,6 +235,25 @@
             var t = btn.getAttribute('data-tab');
             if (t) switchTab(t);
         });
+    });
+
+    if (saved && saved.activeTab) {
+        switchTab(saved.activeTab);
+    }
+
+    // ═══════════════════════════════════════════════════
+    // RESTORE DISCOUNT CHIP UI STATE
+    // ═══════════════════════════════════════════════════
+    ['gw', 'sv'].forEach(function (s) {
+        var currentDisc = data[s].disc;
+        var chips = ui[s].panel.querySelectorAll('.chip');
+        chips.forEach(function (c) {
+            c.classList.remove('on');
+            if (parseInt(c.getAttribute('data-d')) === currentDisc) {
+                c.classList.add('on');
+            }
+        });
+        preview(s);
     });
 
     // ═══════════════════════════════════════════════════
@@ -163,6 +264,7 @@
             var p = ui[s].panel;
             var wasClosed = p.classList.contains('shut');
             p.classList.toggle('shut');
+            clearActiveRow();
             if (wasClosed) {
                 setTimeout(function () {
                     ui[s].name.focus({ preventScroll: true });
@@ -187,7 +289,7 @@
         mMsg.textContent   = msg;
         mYes.textContent   = btnText || 'Remove';
         mModal.className   = 'modal';
-        if (variant === 'sv')     mModal.classList.add('sv-m');
+        if (variant === 'sv')          mModal.classList.add('sv-m');
         else if (variant === 'danger') mModal.classList.add('danger-m');
         mOverlay.classList.add('on');
         vib(10);
@@ -225,11 +327,11 @@
         var item  = data[store].items.filter(function (i) { return i.id === id; })[0];
         if (!item) return;
 
+        clearActiveRow();
         dName.value  = item.name;
         dPrice.value = item.orig.toFixed(2);
         editDisc     = item.disc;
 
-        // Build discount chips inside drawer
         dChips.innerHTML = '';
         data[store].opts.forEach(function (d) {
             var b = document.createElement('button');
@@ -269,6 +371,7 @@
     }
 
     dPrice.addEventListener('input', calcDrawer);
+    dName.addEventListener('input', calcDrawer);
 
     dSave.addEventListener('click', function () {
         if (!editStore) return;
@@ -279,13 +382,15 @@
         var p = parseFloat(dPrice.value);
 
         if (!n) {
-            dName.classList.add('shake');
-            setTimeout(function () { dName.classList.remove('shake'); }, 500);
+            dName.closest('.d-field').classList.add('shake');
+            setTimeout(function () { dName.closest('.d-field').classList.remove('shake'); }, 500);
+            dName.focus();
             return;
         }
         if (isNaN(p) || p < 0) {
-            dPrice.classList.add('shake');
-            setTimeout(function () { dPrice.classList.remove('shake'); }, 500);
+            dPrice.closest('.d-field').classList.add('shake');
+            setTimeout(function () { dPrice.closest('.d-field').classList.remove('shake'); }, 500);
+            dPrice.focus();
             return;
         }
 
@@ -295,6 +400,7 @@
         item.save  = p * (editDisc / 100);
         item.final = p - item.save;
 
+        saveData();
         render(editStore);
         closeDrawer();
         vib(5);
@@ -313,7 +419,7 @@
     });
 
     // ═══════════════════════════════════════════════════
-    // CHIPS (add-form discount selectors)
+    // CHIPS
     // ═══════════════════════════════════════════════════
     document.querySelectorAll('.chip').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -324,18 +430,19 @@
             btn.classList.add('on');
             data[s].disc = parseInt(btn.getAttribute('data-d'));
             preview(s);
+            saveData();
         });
     });
 
     // ═══════════════════════════════════════════════════
-    // PREVIEW (live price calculation in add form)
+    // PREVIEW
     // ═══════════════════════════════════════════════════
     function preview(s) {
         var p = parseFloat(ui[s].price.value) || 0;
         var d = data[s].disc;
         var f = p * (1 - d / 100);
-        ui[s].peek.textContent      = fmt(f);
-        ui[s].fill.style.width      = (p > 0 ? (f / p) * 100 : 100) + '%';
+        ui[s].peek.textContent = fmt(f);
+        ui[s].fill.style.width = (p > 0 ? (f / p) * 100 : 100) + '%';
     }
 
     ['gw', 'sv'].forEach(function (s) {
@@ -350,19 +457,21 @@
         var p  = parseFloat(ui[s].price.value);
         var ok = true;
 
-        if (!n)              { flash(ui[s].name.closest('.fld'));  ok = false; }
+        if (!n)                 { flash(ui[s].name.closest('.fld'));  ok = false; }
         if (isNaN(p) || p <= 0) { flash(ui[s].price.closest('.fld')); ok = false; }
         if (!ok) return;
 
         var d  = data[s].disc;
         var sv = p * (d / 100);
+
         data[s].items.push({
-            id:    Date.now() + Math.random(),
-            name:  n,
-            orig:  p,
-            disc:  d,
-            save:  sv,
-            final: p - sv
+            id:        Date.now() + Math.random(),
+            name:      n,
+            orig:      p,
+            disc:      d,
+            save:      sv,
+            final:     p - sv,
+            timestamp: Date.now()
         });
 
         ui[s].name.value  = '';
@@ -372,6 +481,7 @@
         ui[s].panel.classList.add('shut');
         if (document.activeElement) document.activeElement.blur();
         vib(5);
+        saveData();
         render(s);
 
         requestAnimationFrame(function () {
@@ -396,6 +506,7 @@
 
             var row = ui[s].list.querySelector('[data-id="' + id + '"]');
             if (row) {
+                if (activeRow === row) activeRow = null;
                 row.style.transition    = 'all .28s ease';
                 row.style.opacity       = '0';
                 row.style.transform     = 'translateX(30px) scale(.94)';
@@ -408,11 +519,13 @@
                 setTimeout(function () {
                     data[s].items = data[s].items.filter(function (i) { return i.id !== id; });
                     vib(10);
+                    saveData();
                     render(s);
                 }, 300);
             } else {
                 data[s].items = data[s].items.filter(function (i) { return i.id !== id; });
                 vib(10);
+                saveData();
                 render(s);
             }
         });
@@ -424,6 +537,7 @@
     function clearAll(s) {
         if (data[s].items.length === 0) return;
 
+        clearActiveRow();
         var len = data[s].items.length;
         askModal(
             'Clear All Items?',
@@ -433,7 +547,18 @@
         ).then(function (yes) {
             if (!yes) return;
             data[s].items = [];
+            data[s].disc  = 0;
             vib(15);
+
+            var chips = ui[s].panel.querySelectorAll('.chip');
+            chips.forEach(function (c) {
+                c.classList.remove('on');
+                if (parseInt(c.getAttribute('data-d')) === 0) {
+                    c.classList.add('on');
+                }
+            });
+
+            saveData();
             render(s);
         });
     }
@@ -444,6 +569,8 @@
     function render(s) {
         var d     = ui[s];
         var items = data[s].items;
+
+        clearActiveRow();
         d.list.innerHTML = '';
 
         if (items.length === 0) {
@@ -506,13 +633,20 @@
                         '</button>' +
                     '</div>';
 
+                row.addEventListener('click', function (e) {
+                    if (e.target.closest('.act')) return;
+                    setActiveRow(row);
+                });
+
                 row.querySelector('.act-edit').addEventListener('click', function (e) {
                     e.stopPropagation();
+                    clearActiveRow();
                     openDrawer(s, item.id);
                 });
 
                 row.querySelector('.act-del').addEventListener('click', function (e) {
                     e.stopPropagation();
+                    clearActiveRow();
                     removeItem(s, item.id);
                 });
 
@@ -520,10 +654,8 @@
             });
         }
 
-        // Update badge count
         d.badge.textContent = items.length + (items.length === 1 ? ' item' : ' items');
 
-        // Compute totals
         var subT = 0, totS = 0, totF = 0;
         items.forEach(function (i) {
             subT += i.orig;
@@ -536,6 +668,13 @@
         d.tot.textContent   = fmt(totF);
         d.statI.textContent = items.length;
         d.statS.textContent = short(totS);
+
+        var totEl = d.tot;
+        totEl.style.transition = 'none';
+        totEl.style.transform  = 'scale(1.08)';
+        totEl.offsetHeight;
+        totEl.style.transition = 'transform .3s cubic-bezier(.34,1.56,.64,1)';
+        totEl.style.transform  = 'scale(1)';
     }
 
     // ═══════════════════════════════════════════════════
@@ -565,73 +704,93 @@
         });
     });
 
-    // Global keyboard shortcuts
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             if (dOverlay.classList.contains('on'))      closeDrawer();
             else if (mOverlay.classList.contains('on')) closeModal(false);
+            else clearActiveRow();
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+            e.preventDefault();
+            var p = ui[activeStore].panel;
+            if (p.classList.contains('shut')) {
+                p.classList.remove('shut');
+                setTimeout(function () {
+                    ui[activeStore].name.focus({ preventScroll: true });
+                }, 350);
+            } else {
+                ui[activeStore].name.focus({ preventScroll: true });
+            }
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === '1') {
+            e.preventDefault();
+            switchTab('goodwill');
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === '2') {
+            e.preventDefault();
+            switchTab('svdp');
         }
     });
 
     // ═══════════════════════════════════════════════════
     // PWA INSTALL BANNER
     // ═══════════════════════════════════════════════════
-    var pwaBanner     = el('pwa-banner');
-    var pwaInstallBtn = el('pwa-install');
-    var pwaDismissBtn = el('pwa-dismiss');
+    var pwaBanner      = el('pwa-banner');
+    var pwaInstallBtn  = el('pwa-install');
+    var pwaDismissBtn  = el('pwa-dismiss');
     var deferredPrompt = null;
+    var PWA_DISMISS_KEY = 'thriftstore_pwa_dismissed';
 
-    // Capture the install prompt event
     window.addEventListener('beforeinstallprompt', function (e) {
         e.preventDefault();
         deferredPrompt = e;
 
-        // Only show banner if not already installed
-        if (!window.matchMedia('(display-mode: standalone)').matches) {
+        var dismissed = false;
+        try { dismissed = localStorage.getItem(PWA_DISMISS_KEY) === 'true'; } catch (ex) {}
+
+        if (!dismissed && !window.matchMedia('(display-mode: standalone)').matches) {
             setTimeout(function () {
-                pwaBanner.classList.add('show');
-            }, 2000);
+                if (pwaBanner) pwaBanner.classList.add('show');
+            }, 3000);
         }
     });
 
-    // Install button clicked
     if (pwaInstallBtn) {
         pwaInstallBtn.addEventListener('click', function () {
             if (!deferredPrompt) return;
-            pwaBanner.classList.remove('show');
+            if (pwaBanner) pwaBanner.classList.remove('show');
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then(function (result) {
                 if (result.outcome === 'accepted') {
-                    console.log('PWA installed');
+                    console.log('ThriftStore PWA installed');
                 }
                 deferredPrompt = null;
             });
         });
     }
 
-    // Dismiss banner
     if (pwaDismissBtn) {
         pwaDismissBtn.addEventListener('click', function () {
-            pwaBanner.classList.remove('show');
+            if (pwaBanner) pwaBanner.classList.remove('show');
             deferredPrompt = null;
+            try { localStorage.setItem(PWA_DISMISS_KEY, 'true'); } catch (ex) {}
         });
     }
 
-    // Hide banner if already running as installed PWA
     window.addEventListener('appinstalled', function () {
-        pwaBanner.classList.remove('show');
+        if (pwaBanner) pwaBanner.classList.remove('show');
         deferredPrompt = null;
     });
 
     // ═══════════════════════════════════════════════════
-    // SIDEBAR ABOUT (placeholder — extend as needed)
+    // SIDEBAR ABOUT
     // ═══════════════════════════════════════════════════
     var sidebarAbout = el('sidebar-about');
     if (sidebarAbout) {
         sidebarAbout.addEventListener('click', function () {
             askModal(
-                'About ThriftCalc',
-                'A fast price calculator for Goodwill and St. Vincent de Paul. Add items, apply discounts, and see your total savings instantly.',
+                'About ThriftStore',
+                'A fast price calculator for thrift stores. Add items, apply discounts, and see your total savings. Data is saved locally on your device.',
                 'Got it',
                 'gw'
             ).then(function () {});
@@ -639,18 +798,7 @@
     }
 
     // ═══════════════════════════════════════════════════
-    // TOP NAV THEME TOGGLE (placeholder — extend as needed)
-    // ═══════════════════════════════════════════════════
-    var topNavTheme = el('top-nav-theme');
-    if (topNavTheme) {
-        topNavTheme.addEventListener('click', function () {
-            // Placeholder: future light/dark toggle
-            vib(5);
-        });
-    }
-
-    // ═══════════════════════════════════════════════════
-    // SERVICE WORKER REGISTRATION (PWA offline support)
+    // SERVICE WORKER
     // ═══════════════════════════════════════════════════
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
@@ -661,6 +809,19 @@
             });
         });
     }
+
+    // ═══════════════════════════════════════════════════
+    // SAVE ON PAGE HIDE
+    // ═══════════════════════════════════════════════════
+    window.addEventListener('pagehide', function () {
+        saveData();
+    });
+
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+            saveData();
+        }
+    });
 
     // ═══════════════════════════════════════════════════
     // INIT

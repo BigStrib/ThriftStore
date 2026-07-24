@@ -143,7 +143,7 @@ input[type="number"] {
 }
 
 /* ============================================
-   MOBILE TOP TABS — sits at very top with safe area
+   MOBILE TOP TABS
    ============================================ */
 .tabs {
     position: relative;
@@ -151,11 +151,10 @@ input[type="number"] {
     display: flex;
     background: var(--b0);
     border-bottom: 1px solid var(--gb);
-    /* Safe area on top pushes content below notch/status bar */
     padding-top: var(--sat);
     height: calc(var(--mob-nav-h) + var(--sat));
     flex-shrink: 0;
-    order: -1; /* Forces tabs above content in flex column */
+    order: -1;
 }
 
 .tab {
@@ -236,7 +235,7 @@ input[type="number"] {
 }
 
 /* ============================================
-   TOP NAV BAR (Tablet / Desktop — hidden on mobile)
+   TOP NAV BAR (Tablet / Desktop)
    ============================================ */
 .top-nav {
     display: none;
@@ -1123,9 +1122,13 @@ input[type="number"] {
     gap: 12px;
     animation: rowIn .3s var(--out) both;
     transition: border-color .2s, background .2s;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
-.irow:hover {
+/* Active/selected row highlight */
+.irow.active {
     background: var(--b3);
     border-color: var(--b4);
 }
@@ -1218,6 +1221,19 @@ input[type="number"] {
     display: flex;
     gap: 4px;
     flex-shrink: 0;
+    /* Hidden by default — revealed via .active on row */
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition: opacity .25s var(--ease), width .25s var(--ease);
+}
+
+/* Show actions when row is active */
+.irow.active .irow-acts {
+    opacity: 1;
+    width: auto;
+    pointer-events: all;
 }
 
 .act {
@@ -1229,6 +1245,7 @@ input[type="number"] {
     justify-content: center;
     color: var(--t3);
     transition: all .2s;
+    flex-shrink: 0;
 }
 
 .act svg {
@@ -1242,7 +1259,7 @@ input[type="number"] {
 }
 
 .act.act-edit:active {
-    background: rgba(255, 255, 255, .08);
+    background: rgba(255, 255, 255, .12);
     color: var(--t1);
 }
 
@@ -1252,7 +1269,7 @@ input[type="number"] {
 }
 
 .act.act-del:active {
-    background: rgba(255, 71, 87, .12);
+    background: rgba(255, 71, 87, .15);
     color: var(--red);
 }
 
@@ -1837,7 +1854,6 @@ input[type="number"] {
         display: flex;
     }
 
-    /* Hide mobile tabs on tablet+ */
     .tabs {
         display: none;
     }
@@ -1888,15 +1904,6 @@ input[type="number"] {
         padding: 10px 18px;
     }
 
-    .act {
-        opacity: 0;
-        transition: opacity .2s, background .2s, color .2s;
-    }
-
-    .irow:hover .act {
-        opacity: 1;
-    }
-
     .foot {
         margin: 0 -24px;
     }
@@ -1943,7 +1950,6 @@ input[type="number"] {
         display: none;
     }
 
-    /* Collapse top nav to just a border line when sidebar is visible */
     .top-nav {
         height: 1px;
         padding: 0;
