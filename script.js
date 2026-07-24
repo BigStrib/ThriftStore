@@ -1,50 +1,36 @@
 (function () {
     'use strict';
 
-    // ─── viewport height (PWA fix) ───
-    function setHeight() {
+    // ─── viewport height: the ONLY source of truth ───
+    function setAppHeight() {
         var h = window.visualViewport
             ? window.visualViewport.height
             : window.innerHeight;
         document.documentElement.style.setProperty('--app-h', h + 'px');
     }
 
-    setHeight();
-    window.addEventListener('resize', setHeight);
+    setAppHeight();
+    window.addEventListener('resize', setAppHeight);
     window.addEventListener('orientationchange', function () {
-        setTimeout(setHeight, 120);
+        setTimeout(setAppHeight, 120);
     });
+
     if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', setHeight);
-        window.visualViewport.addEventListener('scroll', setHeight);
+        window.visualViewport.addEventListener('resize', setAppHeight);
     }
 
-    // re-measure when PWA resumes from background
+    // PWA resume from background
     document.addEventListener('visibilitychange', function () {
-        if (!document.hidden) setTimeout(setHeight, 80);
+        if (!document.hidden) setTimeout(setAppHeight, 80);
     });
-    window.addEventListener('focus', function () {
-        setTimeout(setHeight, 80);
-    });
-
-    // also measure tab bar actual height and set bottom offset
-    function setTabOffset() {
-    var tabs = document.getElementById('tabs');
-    if (!tabs) return;
-    // Use the FULL rendered height including any safe-area padding
-    var h = tabs.offsetHeight;
-    document.querySelectorAll('.view').forEach(function (v) {
-        v.style.bottom = h + 'px';
-    });
-}
-
-    setTabOffset();
-    window.addEventListener('resize', setTabOffset);
-    window.addEventListener('orientationchange', function () {
-        setTimeout(setTabOffset, 150);
+    window.addEventListener('pageshow', setAppHeight);
+    window.addEventListener('load', function () {
+        setAppHeight();
+        setTimeout(setAppHeight, 100);
+        setTimeout(setAppHeight, 500);
     });
 
-    // ─── prevent zoom gestures ───
+    // ─── prevent zoom ───
     document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
     document.addEventListener('gesturechange', function (e) { e.preventDefault(); }, { passive: false });
 
@@ -80,7 +66,7 @@
         sv: { items: [], disc: 0, opts: [0, 25, 50] }
     };
 
-    // ─── dom map ───
+    // ─── dom ───
     var ui = {};
     ['gw', 'sv'].forEach(function (s) {
         ui[s] = {
@@ -269,12 +255,11 @@
             views[t].classList.add('on');
 
             views[t].style.animation = 'none';
-            views[t].offsetHeight; // reflow
+            views[t].offsetHeight;
             views[t].style.animation = '';
 
             if (document.activeElement) document.activeElement.blur();
             vib(5);
-            setTabOffset();
         });
     });
 
@@ -302,7 +287,7 @@
         ui[s].price.addEventListener('input', function () { preview(s); });
     });
 
-    // ─── add item ───
+    // ─── add ───
     function addItem(s) {
         var n = ui[s].name.value.trim();
         var p = parseFloat(ui[s].price.value);
@@ -374,7 +359,7 @@
         });
     }
 
-    // ─── clear all ───
+    // ─── clear ───
     function clearAll(s) {
         if (data[s].items.length === 0) return;
 

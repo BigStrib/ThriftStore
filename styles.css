@@ -67,8 +67,8 @@ body{
     -webkit-font-smoothing:antialiased;
     line-height:1.5;
     font-size:16px;
-    position:fixed;
-    top:0;left:0;right:0;bottom:0;
+    display:flex;
+    flex-direction:column;
 }
 
 button{
@@ -91,27 +91,52 @@ input[type="number"]{-moz-appearance:textfield}
 *{scrollbar-width:none}
 
 /* ============================================
-   BOTTOM TAB BAR
+   APP LAYOUT — flex column, no fixed positioning fight
+   ============================================ */
+.view-stack{
+    flex:1;
+    min-height:0;
+    display:flex;
+    position:relative;
+}
+
+.view{
+    display:none;
+    flex:1;
+    min-height:0;
+    flex-direction:column;
+    animation:fadeUp .35s var(--out);
+}
+.view.on{display:flex}
+
+@keyframes fadeUp{
+    from{opacity:0;transform:translateY(6px)}
+    to{opacity:1;transform:translateY(0)}
+}
+
+.view-wrap{
+    flex:1;
+    display:flex;flex-direction:column;
+    max-width:540px;width:100%;
+    margin:0 auto;
+    padding:0 16px;
+    overflow:hidden;
+    min-height:0;
+}
+
+/* ============================================
+   BOTTOM TAB BAR — normal flex child, no fixed
    ============================================ */
 .tabs{
-    position:fixed;
-    left:0;right:0;bottom:0;
+    flex-shrink:0;
     z-index:900;
     display:flex;
-    /* Total bar = 54px content zone + safe area */
-    height:calc(54px + env(safe-area-inset-bottom, 0px));
-    /* Push tab buttons UP so they sit in the 54px zone,
-       not the safe area zone */
-    padding-bottom:env(safe-area-inset-bottom, 0px);
+    height:var(--tab-h);
     background:var(--b0);
     border-top:1px solid var(--gb);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    box-sizing:content-box;
 }
-
-/* Fills any gap below tabs in PWA mode */
-.tabs::before{
-    display:none;
-}
-
 
 .tab{
     flex:1;
@@ -150,40 +175,7 @@ input[type="number"]{-moz-appearance:textfield}
 .tab-txt{font-size:10px;font-weight:600;letter-spacing:.3px}
 
 /* ============================================
-   VIEWS (PAGES)
-   ============================================ */
-.view{
-    display:none;
-    position:fixed;
-    top:0;left:0;right:0;
-    /* Full height of tab bar including safe area */
-    bottom:calc(54px + env(safe-area-inset-bottom, 0px));
-    overflow:hidden;
-}
-
-.view.on{
-    display:flex;
-    flex-direction:column;
-    animation:fadeUp .35s var(--out);
-}
-
-@keyframes fadeUp{
-    from{opacity:0;transform:translateY(6px)}
-    to{opacity:1;transform:translateY(0)}
-}
-
-.view-wrap{
-    flex:1;
-    display:flex;flex-direction:column;
-    max-width:540px;width:100%;
-    margin:0 auto;
-    padding:0 16px;
-    overflow:hidden;
-    min-height:0;
-}
-
-/* ============================================
-   HEADER / HERO
+   HEADER
    ============================================ */
 .hdr{
     flex-shrink:0;
@@ -219,7 +211,7 @@ input[type="number"]{-moz-appearance:textfield}
 .stat-lbl{display:block;font-size:9px;font-weight:600;color:var(--t3);letter-spacing:.7px;margin-top:2px}
 
 /* ============================================
-   COLLAPSIBLE PANEL
+   PANEL
    ============================================ */
 .panel{
     flex-shrink:0;
@@ -243,7 +235,6 @@ input[type="number"]{-moz-appearance:textfield}
     display:flex;align-items:center;justify-content:center;
     flex-shrink:0;
 }
-
 .panel-plus svg{width:18px;height:18px}
 
 #view-goodwill .panel-plus{background:var(--gw-tint);color:var(--gw-hi)}
@@ -253,7 +244,6 @@ input[type="number"]{-moz-appearance:textfield}
     transition:transform .3s var(--pop);
     transform-origin:center;
 }
-
 .panel.shut .panel-plus .vl{transform:rotate(0deg)}
 .panel:not(.shut) .panel-plus .vl{transform:rotate(90deg)}
 
@@ -262,20 +252,14 @@ input[type="number"]{-moz-appearance:textfield}
     grid-template-rows:0fr;
     transition:grid-template-rows .35s var(--ease);
 }
-
-.panel:not(.shut) .panel-body{
-    grid-template-rows:1fr;
-}
+.panel:not(.shut) .panel-body{grid-template-rows:1fr}
 
 .panel-inner{
     overflow:hidden;
     padding:0 16px;
     transition:padding .35s var(--ease);
 }
-
-.panel:not(.shut) .panel-inner{
-    padding:0 16px 16px;
-}
+.panel:not(.shut) .panel-inner{padding:0 16px 16px}
 
 /* ============================================
    INPUTS
@@ -295,7 +279,6 @@ input[type="number"]{-moz-appearance:textfield}
     padding:0 14px;height:48px;
     transition:border-color .2s,background .2s,box-shadow .2s;
 }
-
 .inp:focus-within{
     border-color:var(--t3);
     background:var(--b3);
@@ -321,7 +304,7 @@ input[type="number"]{-moz-appearance:textfield}
 .inp-price:focus-within .dollar{color:var(--t2)}
 
 /* ============================================
-   DISCOUNT CHIPS
+   CHIPS
    ============================================ */
 .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 
@@ -342,7 +325,6 @@ input[type="number"]{-moz-appearance:textfield}
     transform:translateX(-50%) scaleX(0);
     transition:transform .3s var(--pop);
 }
-
 .chip.on::before{transform:translateX(-50%) scaleX(1)}
 
 .chip b{font-size:22px;font-weight:800;color:var(--t2);letter-spacing:-.5px;line-height:1.15;transition:color .25s}
@@ -359,7 +341,7 @@ input[type="number"]{-moz-appearance:textfield}
 #view-svdp .chip.on small{color:var(--sv)}
 
 /* ============================================
-   PREVIEW STRIP
+   PEEK
    ============================================ */
 .peek{
     background:var(--b2);border-radius:var(--rx);
@@ -392,7 +374,7 @@ input[type="number"]{-moz-appearance:textfield}
 .sv-add{background:linear-gradient(135deg,var(--sv),var(--sv-lo))}
 
 /* ============================================
-   ITEMS LIST AREA
+   ITEMS BOX
    ============================================ */
 .items-box{
     flex:1;min-height:0;
@@ -409,7 +391,6 @@ input[type="number"]{-moz-appearance:textfield}
     padding:14px 16px 0;
     flex-shrink:0;
 }
-
 .items-top h2{font-size:15px;font-weight:700;color:var(--t1);flex-shrink:0}
 .badge{font-size:12px;font-weight:600;color:var(--t3);background:var(--b3);padding:3px 10px;border-radius:16px;flex-shrink:0}
 
@@ -429,7 +410,7 @@ input[type="number"]{-moz-appearance:textfield}
 }
 
 /* ============================================
-   EMPTY STATE
+   EMPTY
    ============================================ */
 .empty{
     flex:1;display:flex;flex-direction:column;
@@ -470,7 +451,6 @@ input[type="number"]{-moz-appearance:textfield}
     font-size:11px;font-weight:800;color:#fff;
     flex-shrink:0;letter-spacing:-.3px;
 }
-
 .irow-badge.gw-bg{background:linear-gradient(135deg,var(--gw),var(--gw-lo))}
 .irow-badge.sv-bg{background:linear-gradient(135deg,var(--sv),var(--sv-lo))}
 .irow-badge.no-d{background:var(--b4);color:var(--t3);font-size:9px;letter-spacing:.3px}
@@ -482,7 +462,6 @@ input[type="number"]{-moz-appearance:textfield}
 .irow-meta .saved{color:var(--grn);font-weight:700}
 
 .irow-price{font-size:17px;font-weight:800;color:var(--t0);font-variant-numeric:tabular-nums;letter-spacing:-.3px;flex-shrink:0}
-
 .irow-acts{display:flex;gap:4px;flex-shrink:0}
 
 .act{
@@ -495,7 +474,7 @@ input[type="number"]{-moz-appearance:textfield}
 .act.act-del:active{background:rgba(255,71,87,.12);color:var(--red)}
 
 /* ============================================
-   TOTALS FOOTER
+   FOOTER (TOTALS)
    ============================================ */
 .foot{
     flex-shrink:0;
@@ -514,7 +493,6 @@ input[type="number"]{-moz-appearance:textfield}
 .sv-foot{background:linear-gradient(160deg,#1a0a0e 0%,var(--sv-lo) 50%,#0d0d0d 100%)}
 
 .foot-rows,.foot-big{position:relative;z-index:1}
-
 .foot>*{padding-left:22px;padding-right:22px}
 
 .foot-rows{padding-top:14px}
@@ -536,7 +514,7 @@ input[type="number"]{-moz-appearance:textfield}
 .foot-big-num{font-size:30px;font-weight:900;color:#fff;letter-spacing:-1.2px;line-height:1;font-variant-numeric:tabular-nums}
 
 /* ============================================
-   OVERLAY (shared for modal & drawer)
+   OVERLAY / MODAL / DRAWER
    ============================================ */
 .overlay{
     position:fixed;inset:0;z-index:2000;
@@ -549,9 +527,6 @@ input[type="number"]{-moz-appearance:textfield}
 }
 .overlay.on{opacity:1;pointer-events:all}
 
-/* ============================================
-   MODAL
-   ============================================ */
 .modal{
     background:var(--b2);border:1px solid var(--gb);
     border-radius:var(--r);
@@ -586,16 +561,11 @@ input[type="number"]{-moz-appearance:textfield}
 }
 .mbtn-cancel{background:var(--b4);color:var(--t2)}
 .mbtn-cancel:active{background:var(--b3);color:var(--t1)}
-
 .mbtn-confirm{background:var(--gw);color:#fff}
 .mbtn-confirm:active{filter:brightness(.85)}
-
 .modal.sv-m .mbtn-confirm{background:var(--sv)}
 .modal.danger-m .mbtn-confirm{background:var(--red)}
 
-/* ============================================
-   EDIT DRAWER
-   ============================================ */
 #drawer-overlay{align-items:flex-end;padding:0}
 
 .drawer{
@@ -614,7 +584,6 @@ input[type="number"]{-moz-appearance:textfield}
 .overlay.on .drawer{transform:translateY(0)}
 
 .drawer-pill{width:36px;height:4px;background:var(--b4);border-radius:2px;margin:12px auto 0}
-
 .drawer-top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 0}
 .drawer-top h3{font-size:18px;font-weight:700;color:var(--t0)}
 
@@ -694,23 +663,17 @@ input[type="number"]{-moz-appearance:textfield}
 
 /* ============================================
    DESKTOP — TOP NAV
+   Reorder tabs above views using flex
    ============================================ */
 @media(min-width:768px){
+    body{flex-direction:column}
     .tabs{
-        top:0;bottom:auto;
+        order:-1;
         border-top:none;
         border-bottom:1px solid var(--gb);
         justify-content:center;
-        /* Reset for desktop top nav */
-        height:var(--tab-h);
         padding-bottom:0;
     }
-    .tabs::before{display:none}
-
-  .view{top:var(--tab-h);bottom:0}
-
-
-
     .tab{
         flex:none;flex-direction:row;
         gap:10px;padding:0 44px;height:100%;
@@ -718,7 +681,6 @@ input[type="number"]{-moz-appearance:textfield}
     .tab::after{top:auto;bottom:-1px;border-radius:2px 2px 0 0}
     .tab-txt{font-size:14px;font-weight:600}
 
-    .view{top:var(--tab-h);bottom:0}
     .view-wrap{max-width:600px;padding:0 24px}
     .hdr{margin:0 -24px;padding:18px 28px 14px}
     .hdr-text h1{font-size:26px}
@@ -799,7 +761,7 @@ input[type="number"]{-moz-appearance:textfield}
 }
 
 /* ============================================
-   SHORT PHONES
+   SHORT
    ============================================ */
 @media(max-height:600px){
     .hdr{padding:max(env(safe-area-inset-top,6px),6px) 14px 6px}
