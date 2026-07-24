@@ -42,51 +42,32 @@
     --out: cubic-bezier(0,0,.2,1);
 
     --tab-h: 54px;
-    --app-h: 100vh;
 }
 
 /* ============================================
    RESET
    ============================================ */
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* HTML paints the ENTIRE physical screen (including behind home indicator on PWA) */
 html {
-    background: #0e0e10 !important;
-    background-color: #0e0e10 !important;
+    background: var(--b0);
     height: 100%;
-    width: 100%;
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
-    /* This is critical: keeps html background even when body overscrolls */
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
 }
 
-/* BODY sits inside the visible viewport (excludes home indicator zone) */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #0e0e10;
+    background: var(--b0);
     color: var(--t1);
-    /* Sized by JS from visualViewport.height — reliable in PWA */
-    height: var(--app-h);
-    width: 100%;
+    height: 100dvh;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
     line-height: 1.5;
     font-size: 16px;
     display: flex;
     flex-direction: column;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    /* Padding pushes tabs UP above the home indicator */
-    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 button {
@@ -143,15 +124,16 @@ input[type="number"] { -moz-appearance: textfield; }
 }
 
 /* ============================================
-   BOTTOM TAB BAR (normal flex child, sits above home indicator)
+   BOTTOM TAB BAR
+   Height includes safe area, icons pushed up by padding
    ============================================ */
 .tabs {
     flex-shrink: 0;
     display: flex;
-    height: var(--tab-h);
     background: var(--b0);
     border-top: 1px solid var(--gb);
-    z-index: 900;
+    height: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .tab {
@@ -587,7 +569,7 @@ input[type="number"] { -moz-appearance: textfield; }
     background: var(--b1);
     border-top: 1px solid var(--gb);
     border-radius: 20px 20px 0 0;
-    max-height: 88vh;
+    max-height: 88dvh;
     overflow-y: auto;
     transform: translateY(100%);
     transition: transform .35s var(--out);
@@ -679,20 +661,13 @@ input[type="number"] { -moz-appearance: textfield; }
    DESKTOP — TOP NAV
    ============================================ */
 @media (min-width: 768px) {
-    html {
-        position: static;
-        overflow: hidden;
-    }
-    body {
-        position: static;
-        padding-bottom: 0;
-        flex-direction: column;
-    }
     .tabs {
         order: -1;
         border-top: none;
         border-bottom: 1px solid var(--gb);
         justify-content: center;
+        height: var(--tab-h);
+        padding-bottom: 0;
     }
     .tab {
         flex: none; flex-direction: row;
