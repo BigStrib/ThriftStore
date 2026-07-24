@@ -15,11 +15,9 @@
     const esc = (s) => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
 
     /* ========== PREVENT ZOOM (mobile only, don't block scroll) ========== */
-    // Prevent pinch zoom on iOS
     document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
     document.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
 
-    // Prevent double-tap zoom only on buttons/interactive elements
     let lastTap = 0;
     document.addEventListener('touchend', (e) => {
         const now = Date.now();
@@ -31,30 +29,41 @@
         lastTap = now;
     }, { passive: false });
 
-    // Only prevent ctrl+wheel zoom (not regular scroll)
     document.addEventListener('wheel', (e) => {
         if (e.ctrlKey || e.metaKey) {
             e.preventDefault();
         }
     }, { passive: false });
 
-    // Prevent ctrl/cmd +/- zoom
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) {
             e.preventDefault();
         }
     });
 
-    /* ========== VIEWPORT HEIGHT FIX (iOS) ========== */
+    /* ========== VIEWPORT HEIGHT FIX (iOS + PWA) ========== */
     function setVH() {
         const vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight) * 0.01;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
     }
+
     setVH();
     window.addEventListener('resize', setVH);
     window.addEventListener('orientationchange', () => setTimeout(setVH, 150));
+
     if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', setVH);
+    }
+
+    // PWA / standalone: recalculate on visibility change & load
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+
+    if (isStandalone) {
+        window.addEventListener('load', () => setTimeout(setVH, 100));
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) setTimeout(setVH, 100);
+        });
     }
 
     /* ========== DOM REFS ========== */
@@ -302,17 +311,13 @@
         d.price.value = '';
         updatePreview(store);
 
-        // Collapse panel
         d.section.classList.add('collapsed');
-
-        // Dismiss keyboard
         document.activeElement?.blur();
 
         if (navigator.vibrate) navigator.vibrate(5);
 
         render(store);
 
-        // Scroll to new item
         requestAnimationFrame(() => {
             d.list.scrollTop = d.list.scrollHeight;
         });
@@ -484,7 +489,6 @@
         });
     });
 
-    // ESC key closes overlays
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             if (drawerOverlay.classList.contains('show')) closeDrawer();
