@@ -98,20 +98,20 @@ input[type="number"]{-moz-appearance:textfield}
     left:0;right:0;bottom:0;
     z-index:900;
     display:flex;
-    height:var(--tab-h);
+    /* Total bar = 54px content zone + safe area */
+    height:calc(54px + env(safe-area-inset-bottom, 0px));
+    /* Push tab buttons UP so they sit in the 54px zone,
+       not the safe area zone */
+    padding-bottom:env(safe-area-inset-bottom, 0px);
     background:var(--b0);
     border-top:1px solid var(--gb);
 }
 
 /* Fills any gap below tabs in PWA mode */
 .tabs::before{
-    content:'';
-    position:absolute;
-    left:0;right:0;
-    top:100%;
-    height:80px;
-    background:var(--b0);
+    display:none;
 }
+
 
 .tab{
     flex:1;
@@ -156,7 +156,8 @@ input[type="number"]{-moz-appearance:textfield}
     display:none;
     position:fixed;
     top:0;left:0;right:0;
-    bottom:var(--tab-h);
+    /* Full height of tab bar including safe area */
+    bottom:calc(54px + env(safe-area-inset-bottom, 0px));
     overflow:hidden;
 }
 
@@ -700,8 +701,15 @@ input[type="number"]{-moz-appearance:textfield}
         border-top:none;
         border-bottom:1px solid var(--gb);
         justify-content:center;
+        /* Reset for desktop top nav */
+        height:var(--tab-h);
+        padding-bottom:0;
     }
     .tabs::before{display:none}
+
+  .view{top:var(--tab-h);bottom:0}
+
+
 
     .tab{
         flex:none;flex-direction:row;

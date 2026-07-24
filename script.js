@@ -29,13 +29,14 @@
 
     // also measure tab bar actual height and set bottom offset
     function setTabOffset() {
-        var tabs = document.getElementById('tabs');
-        if (!tabs) return;
-        var h = tabs.getBoundingClientRect().height;
-        document.querySelectorAll('.view').forEach(function (v) {
-            v.style.bottom = h + 'px';
-        });
-    }
+    var tabs = document.getElementById('tabs');
+    if (!tabs) return;
+    // Use the FULL rendered height including any safe-area padding
+    var h = tabs.offsetHeight;
+    document.querySelectorAll('.view').forEach(function (v) {
+        v.style.bottom = h + 'px';
+    });
+}
 
     setTabOffset();
     window.addEventListener('resize', setTabOffset);
