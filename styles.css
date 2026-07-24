@@ -41,8 +41,9 @@
     --pop: cubic-bezier(.34,1.56,.64,1);
     --out: cubic-bezier(0,0,.2,1);
 
-    --tab-h: 54px;
-    --tab-total: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px));
+   --tab-h: 54px;
+    /* Use 0px fallback so desktop/web doesn't invent 34px of space */
+    --tab-total: calc(54px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ============================================
@@ -151,8 +152,10 @@ input[type="number"] { -moz-appearance: textfield; }
     display: flex;
     background: #0e0e10;
     border-top: 1px solid var(--gb);
-    height: var(--tab-total);
-    /* REMOVE THIS LINE: padding-bottom: env(safe-area-inset-bottom, 34px); */
+    
+    /* Let total height include safe area, fallback to 54px */
+    height: var(--tab-total); 
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .tab {
@@ -165,8 +168,8 @@ input[type="number"] { -moz-appearance: textfield; }
     color: var(--t3);
     transition: color .25s var(--ease);
     position: relative;
-    /* Respect safe area bottom padding without breaking fallback height */
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    /* Force height to match standard tab bar height before safe area padding */
+    height: var(--tab-h); 
 }
 
 .tab::after {
@@ -396,9 +399,12 @@ input[type="number"] { -moz-appearance: textfield; }
    ITEMS BOX
    ============================================ */
 .items-box {
-    flex: 1; min-height: 0;
-    display: flex; flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
     margin-top: 10px;
+    margin-bottom: 0; /* Remove any trailing bottom margin */
     background: var(--g);
     border: 1px solid var(--gb);
     border-radius: var(--rs) var(--rs) 0 0;
@@ -685,25 +691,41 @@ input[type="number"] { -moz-appearance: textfield; }
    ============================================ */
 @media (min-width: 768px) {
     :root {
-        --tab-total: 54px;
+       --tab-h: 54px;
+    --tab-total: calc(54px + env(safe-area-inset-bottom, 0px));
     }
     .tabs {
-        top: 0;
-        bottom: auto;
-        border-top: none;
-        border-bottom: 1px solid var(--gb);
-        justify-content: center;
-        height: 54px;
-        padding-bottom: 0;
-    }
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 900;
+    display: flex;
+    background: #0e0e10;
+    border-top: 1px solid var(--gb);
+    
+    /* Let the height be auto driven by content + padding */
+    height: var(--tab-total);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
     .view-stack {
         top: 54px;
         bottom: 0;
     }
+	
     .tab {
-        flex: none; flex-direction: row;
-        gap: 10px; padding: 0 44px; height: 100%;
-    }
+    flex: 1;
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; /* Ensures content stays in the 54px zone */
+    gap: 3px;
+    color: var(--t3);
+    transition: color .25s var(--ease);
+    position: relative;
+    height: 54px; /* Fix the tab item height to the 54px design target */
+}
+
     .tab::after { top: auto; bottom: -1px; border-radius: 2px 2px 0 0; }
     .tab-txt { font-size: 14px; font-weight: 600; }
 
@@ -716,7 +738,18 @@ input[type="number"] { -moz-appearance: textfield; }
     .panel:not(.shut) .panel-inner { padding: 0 18px 18px; }
     .fld.fixed { width: 130px; }
 
-    .items-box { margin-top: 12px; }
+    .items-box {
+    flex: 1; 
+    min-height: 0;
+    display: flex; 
+    flex-direction: column;
+    margin-top: 10px;
+    margin-bottom: 0; /* Ensures no bottom margin pushes it away */
+    background: var(--g);
+    border: 1px solid var(--gb);
+    border-radius: var(--rs) var(--rs) 0 0;
+    overflow: hidden;
+}
     .items-top { padding: 16px 18px 0; }
     .items-list { padding: 10px 18px; }
 
