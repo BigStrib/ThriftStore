@@ -42,32 +42,44 @@
     --out: cubic-bezier(0,0,.2,1);
 
     --tab-h: 54px;
+    --tab-total: calc(54px + env(safe-area-inset-bottom, 34px));
 }
 
 /* ============================================
-   RESET
+   RESET — html fills physical screen, body fills html
    ============================================ */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 html {
-    background: var(--b0);
-    height: 100%;
-    overflow: hidden;
+    background: #0e0e10;
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
+    /* Force html to cover entire physical viewport including safe areas */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--b0);
+    background: #0e0e10;
     color: var(--t1);
-    height: 100dvh;
-    overflow: hidden;
     -webkit-font-smoothing: antialiased;
     line-height: 1.5;
     font-size: 16px;
-    display: flex;
-    flex-direction: column;
+    /* Body fills html completely */
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    overflow: hidden;
 }
 
 button {
@@ -90,13 +102,17 @@ input[type="number"] { -moz-appearance: textfield; }
 * { scrollbar-width: none; }
 
 /* ============================================
-   APP LAYOUT
+   VIEW STACK — fills body, leaves room for fixed tabs
    ============================================ */
 .view-stack {
-    flex: 1;
-    min-height: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* Sit above the tab bar (which is fixed at bottom) */
+    bottom: var(--tab-total);
+    overflow: hidden;
     display: flex;
-    position: relative;
 }
 
 .view {
@@ -124,16 +140,19 @@ input[type="number"] { -moz-appearance: textfield; }
 }
 
 /* ============================================
-   BOTTOM TAB BAR
-   Height includes safe area, icons pushed up by padding
+   TAB BAR — FIXED to physical bottom of screen
    ============================================ */
 .tabs {
-    flex-shrink: 0;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 900;
     display: flex;
-    background: var(--b0);
+    background: #0e0e10;
     border-top: 1px solid var(--gb);
-    height: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: var(--tab-total);
+    padding-bottom: env(safe-area-inset-bottom, 34px);
 }
 
 .tab {
@@ -569,12 +588,12 @@ input[type="number"] { -moz-appearance: textfield; }
     background: var(--b1);
     border-top: 1px solid var(--gb);
     border-radius: 20px 20px 0 0;
-    max-height: 88dvh;
+    max-height: 88%;
     overflow-y: auto;
     transform: translateY(100%);
     transition: transform .35s var(--out);
     scrollbar-width: none;
-    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 34px));
 }
 .drawer::-webkit-scrollbar { display: none; }
 .overlay.on .drawer { transform: translateY(0); }
@@ -661,13 +680,21 @@ input[type="number"] { -moz-appearance: textfield; }
    DESKTOP — TOP NAV
    ============================================ */
 @media (min-width: 768px) {
+    :root {
+        --tab-total: 54px;
+    }
     .tabs {
-        order: -1;
+        top: 0;
+        bottom: auto;
         border-top: none;
         border-bottom: 1px solid var(--gb);
         justify-content: center;
-        height: var(--tab-h);
+        height: 54px;
         padding-bottom: 0;
+    }
+    .view-stack {
+        top: 54px;
+        bottom: 0;
     }
     .tab {
         flex: none; flex-direction: row;
@@ -813,30 +840,4 @@ input[type="number"] { -moz-appearance: textfield; }
     .tabs, .panel, .overlay { display: none !important; }
     .view { display: block !important; position: static; overflow: visible; }
     html, body { position: static; overflow: visible; background: #fff; color: #000; }
-}
-
-
-
-/* ============================================
-   PWA GAP FIX — tab bar extends to physical bottom
-   ============================================ */
-@media (max-width: 767px) {
-    .tabs {
-        /* Grow the bar itself to include safe area */
-        height: calc(54px + env(safe-area-inset-bottom, 34px));
-        padding-bottom: env(safe-area-inset-bottom, 34px);
-    }
-
-    /* Paint the safe area zone in case padding doesn't render */
-    .tabs::after {
-        content: '';
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: env(safe-area-inset-bottom, 34px);
-        background: var(--b0);
-        z-index: 899;
-        pointer-events: none;
-    }
 }
